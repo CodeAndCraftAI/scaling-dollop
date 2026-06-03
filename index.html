@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Smart Invest India</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);min-height:100vh;color:#f0f0f0;padding:24px 16px}
+.wrap{max-width:760px;margin:0 auto}
+h1{text-align:center;color:#f9c74f;font-size:1.8rem;margin-bottom:6px}
+.sub{text-align:center;color:#aad4f5;font-size:.9rem;margin-bottom:28px}
+.card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);border-radius:14px;padding:24px;margin-bottom:20px}
+.ct{color:#f9c74f;font-size:1rem;font-weight:700;border-bottom:1px solid rgba(249,199,79,.3);padding-bottom:10px;margin-bottom:18px}
+.ticker{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px}
+.tick{background:rgba(249,199,79,.1);border:1px solid rgba(249,199,79,.25);border-radius:8px;padding:7px 12px;flex:1 1 110px;text-align:center;font-size:.8rem;color:#f9c74f;position:relative;cursor:default}
+.tick span{display:block;color:#aad4f5;font-size:.68rem;margin-bottom:2px}
+.tick .tip{visibility:hidden;opacity:0;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#0f2027;border:1px solid rgba(249,199,79,.4);color:#f0f0f0;font-size:.74rem;padding:7px 10px;border-radius:8px;width:200px;line-height:1.5;z-index:99;text-align:left;transition:opacity .18s;pointer-events:none}
+.tick .tip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:rgba(249,199,79,.4)}
+.tick:hover .tip{visibility:visible;opacity:1}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:500px){.grid{grid-template-columns:1fr}}
+.full{grid-column:1/-1}
+.field{display:flex;flex-direction:column;gap:5px}
+label{font-size:.75rem;color:#aad4f5;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+input,select{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#f0f0f0;padding:9px 12px;font-size:.92rem;width:100%}
+input:focus,select:focus{outline:none;border-color:#f9c74f}
+select option{background:#1a2a3a}
+.btn{width:100%;padding:13px;background:linear-gradient(90deg,#f9c74f,#f3722c);color:#1a1a2e;font-size:1rem;font-weight:700;border:none;border-radius:10px;cursor:pointer;margin-top:14px;transition:opacity .2s}
+.btn:hover{opacity:.88}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.errmsg{background:rgba(255,80,80,.13);border:1px solid rgba(255,80,80,.4);border-radius:8px;color:#ff8888;padding:9px 13px;font-size:.85rem;margin-top:10px;display:none}
+.loader{text-align:center;padding:24px;color:#f9c74f;display:none;font-size:.95rem}
+.spin{display:inline-block;width:18px;height:18px;border:2px solid #f9c74f;border-top-color:transparent;border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle;margin-left:8px}
+@keyframes sp{to{transform:rotate(360deg)}}
+#out{display:none}
+.sec{margin-bottom:22px}
+.sec h3{color:#f9c74f;font-size:.95rem;margin-bottom:12px}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.si{background:rgba(255,255,255,.05);border-radius:8px;padding:9px 12px}
+.si span{display:block;font-size:.67rem;color:#aad4f5;text-transform:uppercase;margin-bottom:2px}
+.si strong{font-size:.88rem}
+.ab{margin-bottom:14px}
+.al{display:flex;justify-content:space-between;font-size:.85rem;color:#ddd;margin-bottom:4px}
+.abg{background:rgba(255,255,255,.1);border-radius:4px;height:8px}
+.abar{height:8px;border-radius:4px;background:linear-gradient(90deg,#f9c74f,#f3722c)}
+.amt{font-size:.74rem;color:#aad4f5;margin-top:3px}
+table{width:100%;border-collapse:collapse;font-size:.84rem}
+th{background:rgba(249,199,79,.13);color:#f9c74f;padding:8px 10px;text-align:left;border-bottom:1px solid rgba(255,255,255,.1)}
+td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.06);color:#ddd;vertical-align:top;line-height:1.5}
+tr:last-child td{border-bottom:none}
+.rp{display:inline-block;padding:4px 11px;border-radius:20px;font-size:.76rem;font-weight:600;margin:3px;background:rgba(255,99,99,.15);color:#ff8080;border:1px solid #ff8080}
+.as{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}
+.an{background:#f9c74f;color:#1a1a2e;border-radius:50%;min-width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.78rem;flex-shrink:0}
+.at{color:#ddd;font-size:.88rem;line-height:1.5;padding-top:2px}
+.apills{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.apill{display:inline-flex;align-items:center;gap:4px;padding:4px 11px;border-radius:20px;font-size:.72rem;font-weight:600;text-decoration:none;border:1px solid rgba(170,212,245,.35);color:#aad4f5;background:rgba(170,212,245,.08);transition:background .18s}
+.apill:hover{background:rgba(170,212,245,.2)}
+.disc{font-size:.72rem;color:rgba(255,255,255,.32);text-align:center;margin-top:16px;line-height:1.6}
+.share-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.sbtn{flex:1 1 120px;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px 14px;border-radius:10px;font-size:.88rem;font-weight:700;cursor:pointer;border:none;transition:opacity .2s}
+.sbtn:hover{opacity:.85}
+.sbtn.wa{background:#25D366;color:#fff}
+.sbtn.em{background:rgba(249,199,79,.15);border:1px solid rgba(249,199,79,.5);color:#f9c74f}
+.sbtn.pdf{background:rgba(243,114,44,.15);border:1px solid rgba(243,114,44,.5);color:#f3722c}
+.mfcat{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.mftag{padding:5px 13px;border-radius:20px;font-size:.76rem;font-weight:600;cursor:pointer;border:1px solid rgba(249,199,79,.4);background:rgba(249,199,79,.08);color:#f9c74f;transition:background .2s}
+.mftag.active,.mftag:hover{background:rgba(249,199,79,.22)}
+.mfinfo{background:rgba(255,255,255,.05);border-radius:10px;padding:13px 15px;font-size:.83rem;color:#ddd;line-height:1.6;min-height:48px;margin-bottom:14px}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <h1>🇮🇳 Smart Invest India</h1>
+  <p class="sub">Personalized investment plan based on your profile &amp; live market data</p>
+  <div class="card">
+    <div class="ct">📊 Current Market Context</div>
+    <div class="ticker">
+      <div class="tick"><span>Nifty 50</span><strong>23,648</strong>
+        <div class="tip">India's benchmark index of the top 50 NSE stocks. A sideways or falling Nifty can signal caution for equity investors; a rising Nifty boosts equity fund NAVs.</div>
+      </div>
+      <div class="tick"><span>Repo Rate</span><strong>5.25%</strong>
+        <div class="tip">Rate at which RBI lends to banks. Lower repo → cheaper loans &amp; better equity sentiment. Higher repo → FD rates rise, bond prices fall. Watch for RBI MPC announcements.</div>
+      </div>
+      <div class="tick"><span>CPI Inflation</span><strong>3.48%</strong>
+        <div class="tip">Consumer Price Index inflation. Your real return = nominal return − inflation. At 3.48%, a 7% FD earns only ~3.5% in real terms. Equity historically beats inflation over 7+ years.</div>
+      </div>
+      <div class="tick"><span>Top FD Rates</span><strong>6.5–7.5%</strong>
+        <div class="tip">Best fixed deposit rates from major banks &amp; small finance banks. Lock in higher rates now before potential RBI rate cuts. DICGC insures up to ₹5L per bank.</div>
+      </div>
+      <div class="tick"><span>Sentiment</span><strong>Sideways / Cautious</strong>
+        <div class="tip">Current market mood based on FII/DII flows, global cues, and Nifty trend. Sideways markets favour SIP investing — you accumulate more units at lower prices (rupee cost averaging).</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ct">📚 Mutual Fund Category Guide</div>
+    <p style="font-size:.82rem;color:#aad4f5;margin-bottom:12px">Tap a category to learn more. Chart shows typical long-term annual return range.</p>
+    <div class="mfcat" id="mfcats"></div>
+    <div class="mfinfo" id="mfinfo">Select a category above to see details.</div>
+    <canvas id="mfChart" height="180"></canvas>
+  </div>
+  <div class="card">
+    <div class="ct">👤 Your Profile</div>
+    <div class="grid">
+      <div class="field"><label>Age</label><input type="number" id="fa" placeholder="e.g. 32" min="18" max="80"/></div>
+      <div class="field"><label>Monthly Surplus (₹)</label><input type="number" id="fs" placeholder="e.g. 25000" min="500"/></div>
+      <div class="field full"><label>Primary Goal</label>
+        <select id="fg">
+          <option value="">— Select your goal —</option>
+          <option value="Retirement">Retirement</option>
+          <option value="Child's Education">Child's Education</option>
+          <option value="Home Purchase">Home Purchase</option>
+          <option value="Wealth Creation">Wealth Creation</option>
+          <option value="Emergency Fund">Emergency Fund</option>
+          <option value="Wedding">Wedding</option>
+          <option value="Travel">Travel / Vacation</option>
+        </select>
+      </div>
+      <div class="field"><label>Risk Tolerance</label>
+        <select id="fr">
+          <option value="">— Select —</option>
+          <option value="Low">Low — Capital safety first</option>
+          <option value="Moderate">Moderate — Balanced growth</option>
+          <option value="High">High — Maximize returns</option>
+        </select>
+      </div>
+      <div class="field"><label>Investment Horizon</label>
+        <select id="fh">
+          <option value="">— Select —</option>
+          <option value="Short">Short — Less than 1 year</option>
+          <option value="Medium">Medium — 1 to 3 years</option>
+          <option value="Long">Long — 3 to 7 years</option>
+          <option value="VeryLong">Very Long — 7+ years</option>
+        </select>
+      </div>
+      <div class="field"><label>Tax Bracket</label>
+        <select id="ft">
+          <option value="">— Select —</option>
+          <option value="Nil">Nil / Below taxable limit</option>
+          <option value="5">5%</option>
+          <option value="20">20%</option>
+          <option value="30">30%</option>
+        </select>
+      </div>
+      <div class="field"><label>Existing Investments</label>
+        <select id="fp">
+          <option value="None">None — Starting fresh</option>
+          <option value="FD">FD / Savings only</option>
+          <option value="PPF">PPF / EPF</option>
+          <option value="MF">Mutual Funds</option>
+          <option value="Stocks">Direct Stocks</option>
+          <option value="Mixed">Mixed Portfolio</option>
+        </select>
+      </div>
+    </div>
+    <div class="errmsg" id="err"></div>
+    <button class="btn" id="btn" onclick="go()">⚡ Generate My Investment Plan</button>
+  </div>
+  <div class="loader" id="ldr">Analyzing your profile… <span class="spin"></span></div>
+  <div class="card" id="out">
+    <div class="ct">📋 Your Personalized Investment Plan</div>
+    <div class="sec"><h3>📌 Profile Summary</h3><div class="sgrid" id="rsum"></div></div>
+    <div class="sec"><h3>💼 Recommended Allocation</h3><div id="ralloc"></div></div>
+    <div class="sec"><h3>🔍 Why Each Instrument?</h3>
+      <table><thead><tr><th>Instrument</th><th>Rationale</th><th>Returns</th></tr></thead>
+      <tbody id="rwhy"></tbody></table>
+    </div>
+    <div class="sec"><h3>📈 Wealth Growth Projection</h3>
+      <div id="projmsg" style="font-size:.84rem;color:#aad4f5;margin-bottom:12px;line-height:1.6"></div>
+      <canvas id="projChart" height="200"></canvas>
+    </div>
+    <div class="sec"><h3>⚠️ Key Risks</h3><div id="rrisks"></div></div>
+    <div class="sec"><h3>🚀 Action Plan</h3><div id="ract"></div></div>
+    <div class="share-row">
+      <button class="sbtn wa" onclick="shareWA()">
+        <svg width="18" height="18" viewBox="0 0 32 32" fill="currentColor"><path d="M16 3C8.82 3 3 8.82 3 16c0 2.3.6 4.47 1.65 6.36L3 29l6.82-1.62A13 13 0 0 0 16 29c7.18 0 13-5.82 13-13S23.18 3 16 3zm6.4 17.9c-.27.75-1.58 1.44-2.16 1.5-.56.06-1.08.27-3.63-.75-3.06-1.22-5.03-4.34-5.18-4.54-.15-.2-1.2-1.6-1.2-3.06 0-1.45.76-2.16 1.03-2.46.27-.3.6-.38.8-.38l.57.01c.18 0 .42-.07.66.5.24.57.83 2.04.9 2.18.07.15.12.32.02.51-.09.2-.14.32-.28.49-.14.17-.3.38-.42.51-.14.14-.3.3-.13.57.17.27.75 1.24 1.62 2.01 1.1.99 2.04 1.3 2.31 1.44.27.15.42.12.58-.07.15-.2.65-.76.82-1.02.17-.26.34-.22.57-.13l1.82.86c.22.1.36.15.41.24.06.09.06.52-.2 1.27z"/></svg>
+        Share on WhatsApp
+      </button>
+      <button class="sbtn pdf" onclick="dlPDF()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        Download PDF
+      </button>
+      <button class="sbtn em" onclick="shareEmail()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
+        Share via Email
+      </button>
+    </div>
+    <p class="disc">⚠️ Educational tool only — not SEBI-registered advice. Consult a certified financial planner before investing.</p>
+  </div>
+</div>
+<script>
+var $=function(id){return document.getElementById(id)};
+var fmt=function(n){return '₹'+Number(n).toLocaleString('en-IN')};
+
+// ── Feature 1: MF Category Explainer ──────────────────────────────────────
+var MF_CATS=[
+  {name:'Liquid Fund',       min:6, max:7,  info:'Invests in overnight/short-term instruments. Redeemable in 1 business day. Ideal parking for emergency money. Risk: near-zero.'},
+  {name:'Short Duration',    min:7, max:8,  info:'Debt funds with 1–3 year maturity profile. Outperform FDs over 1-2 years. Subject to interest-rate risk if rates rise sharply.'},
+  {name:'Cons. Hybrid',      min:8, max:10, info:'~80% debt + 20% equity. Smooth ride with mild equity upside. Good first step for conservative investors wanting a bit more than FD.'},
+  {name:'Balanced Advantage',min:9, max:12, info:'Dynamically shifts equity/debt by market valuations. Cushions falls; captures rallies. Suitable for moderate-risk investors in all horizons.'},
+  {name:'Flexi Cap',         min:11,max:14, info:'Invests freely across large, mid and small caps. Fund manager has full flexibility. Best for 3+ year SIPs. Core long-term holding.'},
+  {name:'ELSS (Tax Saver)',  min:12,max:15, info:'Equity fund with 80C benefit saving up to ₹46,800/yr for 30% bracket. 3-year lock-in per SIP instalment — shortest among 80C options.'},
+  {name:'Mid Cap',           min:14,max:20, info:'Invests in companies ranked 101–250 by market cap. High growth potential but 30-40% falls in corrections. Needs 5+ year horizon.'},
+  {name:'Small Cap',         min:15,max:22, info:'Ranks 251+ by market cap. Highest long-term wealth creator but can fall 50%+ in bear markets. Only for long horizon + strong nerves.'},
+  {name:'Sectoral/Thematic', min:12,max:25, info:'Concentrated bets on one sector (IT, Pharma, Infra). Can massively outperform — or underperform. Cap at 15-25% of total portfolio.'},
+  {name:'International/US',  min:10,max:16, info:'Invests in global equities (often US/Nasdaq). Adds geographic diversification and USD exposure. Buffers INR depreciation over time.'}
+];
+(function initMFChart(){
+  var html='';
+  MF_CATS.forEach(function(c,i){html+='<span class="mftag" onclick="pickMF('+i+')">'+c.name+'</span>';});
+  $('mfcats').innerHTML=html;
+  var ctx=document.getElementById('mfChart').getContext('2d');
+  window._mfChart=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:MF_CATS.map(function(c){return c.name;}),
+      datasets:[
+        {label:'Min %',data:MF_CATS.map(function(c){return c.min;}),backgroundColor:'rgba(170,212,245,0.45)',borderColor:'#aad4f5',borderWidth:1,borderRadius:4},
+        {label:'Max %',data:MF_CATS.map(function(c){return c.max;}),backgroundColor:'rgba(249,199,79,0.45)',borderColor:'#f9c74f',borderWidth:1,borderRadius:4}
+      ]
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{labels:{color:'#f0f0f0',font:{size:11}}},
+        tooltip:{callbacks:{label:function(c){return c.dataset.label+': '+c.raw+'%';}}}
+      },
+      scales:{
+        x:{ticks:{color:'#aad4f5',font:{size:9.5},maxRotation:35},grid:{color:'rgba(255,255,255,.06)'}},
+        y:{ticks:{color:'#aad4f5',callback:function(v){return v+'%';}},grid:{color:'rgba(255,255,255,.06)'},min:0,max:28}
+      }
+    }
+  });
+})();
+// ── Feature 6: Action Plan Pill Buttons ───────────────────────────────────
+var PILL_RULES=[
+  {kw:['Kuvera','kuvera'],          pills:[{l:'Open Kuvera',u:'https://kuvera.in'}]},
+  {kw:['MFCentral','mfcentral'],    pills:[{l:'Open MFCentral',u:'https://www.mfcentral.com'}]},
+  {kw:['Groww','groww'],            pills:[{l:'Open Groww',u:'https://groww.in'}]},
+  {kw:['Zerodha','zerodha'],        pills:[{l:'Open Zerodha',u:'https://zerodha.com'}]},
+  {kw:['eNPS','enps','NPS'],        pills:[{l:'Open eNPS Portal',u:'https://enps.nsdl.com'}]},
+  {kw:['PPF','Public Provident'],   pills:[{l:'SBI PPF',u:'https://retail.onlinesbi.sbi'},{l:'Post Office PPF',u:'https://www.indiapost.gov.in'}]},
+  {kw:['Post Office RD','India Post'],pills:[{l:'India Post App',u:'https://www.indiapost.gov.in'}]},
+  {kw:['SGB','Sovereign Gold'],     pills:[{l:'RBI SGB Info',u:'https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx'},{l:'Buy via Groww',u:'https://groww.in/gold-bonds'}]},
+  {kw:['Fixed Deposit','FD','recurring FD'],pills:[{l:'SBI FD',u:'https://retail.onlinesbi.sbi'},{l:'Compare FD Rates',u:'https://www.bankbazaar.com/fixed-deposit.html'}]},
+  {kw:['80C','80CCD','tax deduction','ELSS'],pills:[{l:'Income Tax Portal',u:'https://www.incometax.gov.in'}]},
+  {kw:['Liquid Fund','Liquid MF'],  pills:[{l:'Compare on Kuvera',u:'https://kuvera.in/explore/funds?category=liquid'}]},
+  {kw:['Midcap','Mid Cap','mid-cap','Midcap SIP'],pills:[{l:'Explore on Groww',u:'https://groww.in/mutual-funds/mid-cap-funds'}]},
+  {kw:['Smallcap','Small Cap','small-cap'],pills:[{l:'Explore on Groww',u:'https://groww.in/mutual-funds/small-cap-funds'}]},
+  {kw:['International','Nasdaq','PPFAS'],pills:[{l:'Explore on Kuvera',u:'https://kuvera.in'}]},
+  {kw:['Sectoral','Thematic'],      pills:[{l:'Sectoral Funds',u:'https://groww.in/mutual-funds/sectoral-thematic-funds'}]},
+  {kw:['Flexi-Cap','Flexi Cap','FlexiCap'],pills:[{l:'Flexi Cap Funds',u:'https://groww.in/mutual-funds/flexi-cap-funds'}]}
+];
+function actionPills(text){
+  var seen={},html='';
+  PILL_RULES.forEach(function(rule){
+    var matched=rule.kw.some(function(k){return text.indexOf(k)!==-1;});
+    if(matched){
+      rule.pills.forEach(function(p){
+        if(!seen[p.l]){
+          seen[p.l]=1;
+          html+='<a class="apill" href="'+p.u+'" target="_blank" rel="noopener">↗ '+p.l+'</a>';
+        }
+      });
+    }
+  });
+  return html?'<div class="apills">'+html+'</div>':'';
+}
+
+// ── Feature 3: jsPDF Download ─────────────────────────────────────────────
+function dlPDF(){
+  var {jsPDF}=window.jspdf;
+  var doc=new jsPDF({unit:'mm',format:'a4'});
+  var W=210,mg=14,y=18,lh=7;
+  function ln(txt,sz,bold,col){
+    doc.setFontSize(sz||11);
+    doc.setFont('helvetica',bold?'bold':'normal');
+    if(col) doc.setTextColor(col[0],col[1],col[2]); else doc.setTextColor(220,220,220);
+    var lines=doc.splitTextToSize(txt,W-mg*2);
+    doc.text(lines,mg,y);
+    y+=lh*lines.length;
+  }
+  function rule(){doc.setDrawColor(80,120,140);doc.line(mg,y,W-mg,y);y+=4;}
+  // dark background
+  doc.setFillColor(15,32,39);doc.rect(0,0,W,297,'F');
+  // header
+  doc.setFillColor(249,199,79);doc.rect(mg,10,W-mg*2,12,'F');
+  doc.setFontSize(13);doc.setFont('helvetica','bold');doc.setTextColor(26,26,46);
+  doc.text('Smart Invest India — Personalized Plan',mg+3,18);
+  y=30;
+  // date
+  ln('Generated: '+new Date().toLocaleDateString('en-IN'),9,false,[170,212,245]);y+=2;
+  rule();
+  // profile summary
+  ln('PROFILE SUMMARY',10,true,[249,199,79]);y+=1;
+  document.querySelectorAll('#rsum .si').forEach(function(el){
+    var sp=el.querySelector('span'),st=el.querySelector('strong');
+    if(sp&&st) ln(sp.textContent+': '+st.textContent,10,false,[220,220,220]);
+  });
+  y+=3;rule();
+  // allocation
+  ln('RECOMMENDED ALLOCATION',10,true,[249,199,79]);y+=1;
+  document.querySelectorAll('#ralloc .ab').forEach(function(ab){
+    var al=ab.querySelector('.al'),amt=ab.querySelector('.amt');
+    if(al) ln('• '+al.children[0].textContent+' — '+al.children[1].textContent+(amt?' ('+amt.textContent+')':''),10);
+  });
+  y+=3;rule();
+  // why table
+  ln('WHY EACH INSTRUMENT',10,true,[249,199,79]);y+=1;
+  document.querySelectorAll('#rwhy tr').forEach(function(tr){
+    var tds=tr.querySelectorAll('td');
+    if(tds.length){
+      ln(tds[0].textContent,10,true,[249,199,79]);
+      ln(tds[1].textContent,9);
+      ln('Expected returns: '+tds[2].textContent,9,false,[170,212,245]);
+      y+=2;
+    }
+  });
+  rule();
+  // risks
+  ln('KEY RISKS',10,true,[249,199,79]);y+=1;
+  document.querySelectorAll('#rrisks .rp').forEach(function(r){ln('⚠ '+r.textContent,9);});
+  y+=3;rule();
+  // action plan
+  ln('ACTION PLAN',10,true,[249,199,79]);y+=1;
+  document.querySelectorAll('#ract .as').forEach(function(as,i){
+    var at=as.querySelector('.at');
+    if(at) ln((i+1)+'. '+at.firstChild.textContent.trim(),10);
+  });
+  y+=4;
+  doc.setFontSize(8);doc.setTextColor(120,140,150);
+  doc.text('Educational tool only — not SEBI-registered advice.',mg,y);
+  doc.save('SmartInvestIndia_Plan.pdf');
+}
+
+// ── Feature 2: Share buttons ───────────────────────────────────────────────
+function buildShareText(){
+  var age=$('fa').value,sur=$('fs').value,goal=$('fg').value,risk=$('fr').value,hor=$('fh').value;
+  var lines=['🇮🇳 *Smart Invest India — My Investment Plan*',''];
+  lines.push('👤 Age: '+age+' | Goal: '+goal+' | Risk: '+risk+' | Horizon: '+hor);
+  lines.push('💰 Monthly SIP: ₹'+Number(sur).toLocaleString('en-IN'));
+  lines.push('');
+  document.querySelectorAll('#ralloc .ab').forEach(function(ab){
+    var al=ab.querySelector('.al');
+    if(al) lines.push('• '+al.children[0].textContent+' — '+al.children[1].textContent);
+  });
+  lines.push('');
+  lines.push('⚠️ Educational tool only. Not SEBI-registered advice.');
+  lines.push('🔗 Open Smart Invest India to generate your own plan.');
+  return lines.join('\n');
+}
+function shareWA(){
+  var txt=buildShareText();
+  window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
+}
+function shareEmail(){
+  var txt=buildShareText();
+  var sub=encodeURIComponent('My Smart Invest India Plan');
+  var body=encodeURIComponent(txt);
+  window.location.href='mailto:?subject='+sub+'&body='+body;
+}
+
+function pickMF(i){
+  var tags=$('mfcats').querySelectorAll('.mftag');
+  tags.forEach(function(t){t.classList.remove('active');});
+  tags[i].classList.add('active');
+  $('mfinfo').textContent=MF_CATS[i].info;
+}
+function serr(m){$('err').textContent=m;$('err').style.display='block';}
+
+function go(){
+  $('err').style.display='none';
+  var age=parseInt($('fa').value),sur=parseInt($('fs').value),
+      goal=$('fg').value,risk=$('fr').value,
+      hor=$('fh').value,tax=$('ft').value,port=$('fp').value;
+  if(!age||age<18||age>80){serr('Enter a valid age (18-80).');return;}
+  if(!sur||sur<500){serr('Enter monthly surplus of at least ₹500.');return;}
+  if(!goal){serr('Select your primary goal.');return;}
+  if(!risk){serr('Select your risk tolerance.');return;}
+  if(!hor){serr('Select your investment horizon.');return;}
+  if(!tax){serr('Select your tax bracket.');return;}
+  $('ldr').style.display='block';
+  $('out').style.display='none';
+  $('btn').disabled=true;
+  setTimeout(function(){
+    try{
+      var p=calc(sur,risk,hor,tax);
+      draw(p,age,sur,goal,risk,hor,tax,port);
+      $('out').style.display='block';
+      $('out').scrollIntoView({behavior:'smooth'});
+    }catch(e){serr('Error: '+e.message);}
+    $('ldr').style.display='none';
+    $('btn').disabled=false;
+  },800);
+}
+
+function calc(sur,risk,hor,tax){
+  var hi=(tax==='30'),i=[],r=[],a=[];
+  if(risk==='Low'){
+    if(hor==='Short'){
+      i=[{n:'Liquid Mutual Fund',p:50,ret:'6-7%',w:'Redeemable in 1 business day. Better than savings account. Near-zero volatility.'},
+         {n:'Bank Fixed Deposit',p:30,ret:'6.5-7.5%',w:'Guaranteed returns. DICGC insured up to Rs5L. Lock in current 7%+ rates.'},
+         {n:'Post Office RD',p:20,ret:'6.9-7.5%',w:'Sovereign guarantee. Zero default risk. Slightly better than bank FD.'}];
+      r=['Inflation at 3.48% erodes real returns on pure debt instruments',
+         'Liquid funds are not capital guaranteed (near-zero risk in practice)',
+         'FD rates may fall if RBI cuts repo rate later this year'];
+      a=['Complete KYC on Kuvera or MFCentral — free, takes 10 min online',
+         'Start Liquid MF SIP: '+fmt(Math.round(sur*.50))+' per month',
+         'Open recurring FD at your bank: '+fmt(Math.round(sur*.30))+' per month',
+         'Open Post Office RD via India Post app: '+fmt(Math.round(sur*.20))+' per month',
+         'Review every 6 months and gradually shift to higher-return instruments'];
+    }else{
+      i=[{n:'PPF (Public Provident Fund)',p:40,ret:'7.1% tax-free',w:'EEE tax status — exempt at investment, growth and maturity. Sovereign backed. Best for 30% bracket.'},
+         {n:'Fixed Deposit or Post Office MIS',p:35,ret:'6.5-7.5%',w:'Predictable income. Lock in 7%+ rates before potential RBI cuts ahead.'},
+         {n:'Conservative Hybrid MF via SIP',p:25,ret:'8-10%',w:'80% debt plus 20% equity. Mild market upside with a cushioned downside.'}];
+      r=['PPF has 15-year lock-in and is illiquid for long periods',
+         'FD interest is fully taxable at your income slab rate',
+         'Hybrid fund returns are market-linked and not guaranteed'];
+      a=['Open PPF at SBI or Post Office: '+fmt(Math.round(sur*.40))+' per month (max Rs1.5L per year)',
+         'Set up auto-recurring FD: '+fmt(Math.round(sur*.35))+' per month',
+         'Start Conservative Hybrid MF SIP: '+fmt(Math.round(sur*.25))+' per month',
+         'Claim 80C deduction on PPF — saves Rs46,800 per year at 30% bracket',
+         'Review portfolio every April after the financial year closes'];
+    }
+  }else if(risk==='Moderate'){
+    if(hor==='Short'){
+      i=[{n:'Balanced Advantage Fund via SIP',p:45,ret:'9-12%',w:'Dynamically shifts equity and debt by valuation. Ideal for current sideways market conditions.'},
+         {n:'Short-Duration Debt Mutual Fund',p:35,ret:'7-8%',w:'Outperforms FD over 1-2 years with manageable interest-rate risk.'},
+         {n:'Fixed Deposit as anchor',p:20,ret:'6.5-7.5%',w:'Guaranteed floor — ensures stability even if the equity portion dips temporarily.'}];
+      r=['BAF equity portion can be negative in sharp market corrections',
+         'Short horizon limits recovery time from equity drawdowns',
+         'Debt MF gains are taxable at slab rate under post-2023 rules'];
+      a=['Start BAF SIP on Groww or Zerodha: '+fmt(Math.round(sur*.45))+' per month',
+         'Start Short-Duration Debt MF SIP: '+fmt(Math.round(sur*.35))+' per month',
+         'Open FD as stable anchor: '+fmt(Math.round(sur*.20))+' per month',
+         '3 months before goal date — shift BAF units to Liquid Fund to protect gains',
+         'Enable Step-Up SIP of plus 10% per year to grow with your salary'];
+    }else if(hor==='Medium'){
+      i=[{n:'Flexi-Cap Mutual Fund via SIP',p:45,ret:'11-14%',w:'Broad equity across large, mid and small caps. Active allocation suits 1-3 year horizon.'},
+         {n:hi?'ELSS Tax Saver Fund':'PPF',p:30,ret:hi?'12-15% plus tax saving':'7.1% tax-free',
+          w:hi?'Saves Rs46,800 per year at 30% bracket. Shortest 80C lock-in at 3 years. Full equity upside.':'Guaranteed tax-free compounding. Ideal debt anchor for moderate risk profile.'},
+         {n:'Sovereign Gold Bond (SGB)',p:25,ret:'8-11% plus 2.5% per year',w:'Inflation and currency hedge. Capital gains tax-free at maturity. 2.5% annual interest credited to account.'}];
+      r=['Equity MF returns are volatile and can be negative in a bad year',
+         'SGB is illiquid with 8-year RBI maturity and thin exchange volumes',
+         'ELSS has a 3-year lock-in per SIP instalment'];
+      a=['Start Flexi-Cap SIP: '+fmt(Math.round(sur*.45))+' per month (Parag Parikh or Mirae Asset)',
+         hi?'Start ELSS SIP: '+fmt(Math.round(sur*.30))+' per month (Axis or Quant or Mirae)':
+            'Open PPF account: '+fmt(Math.round(sur*.30))+' per month',
+         'Buy SGB in next RBI tranche: '+fmt(Math.round(sur*.25))+' per month — check rbi.org.in for dates',
+         'Exhaust full Rs1.5L 80C limit using ELSS and PPF combination',
+         'Rebalance portfolio annually if any allocation drifts more than 5% from target'];
+    }else{
+      i=[{n:'Flexi-Cap plus Midcap MF Mix via SIP',p:50,ret:'12-16%',w:'Long horizon smooths out volatility. Mid-caps historically beat large-caps over 7+ year cycles.'},
+         {n:hi?'ELSS plus NPS Tier I':'PPF plus NPS Tier I',p:30,ret:'10-15% blended',
+          w:hi?'ELSS covers 80C up to Rs1.5L. NPS adds 80CCD(1B) deduction of Rs50K. Dual tax benefit.':
+               'PPF for guaranteed compounding. NPS for retirement corpus with up to 75% equity allocation.'},
+         {n:'International or US Index Fund',p:20,ret:'10-15% in USD',w:'Geographic diversification. Buffers INR depreciation risk. Low correlation with Indian markets.'}];
+      r=['Mid-cap funds can fall 30-40% in corrections — requires patience and long commitment',
+         'NPS is locked till age 60 and 40% must be used for annuity at maturity',
+         'International funds subject to currency risk and Rs7L overseas investment limit per year'];
+      a=['Start Flexi-Cap SIP: '+fmt(Math.round(sur*.30))+' per month plus Midcap SIP: '+fmt(Math.round(sur*.20))+' per month',
+         hi?'ELSS SIP: '+fmt(Math.round(sur*.15))+' per month plus NPS Tier I via eNPS portal: '+fmt(Math.round(sur*.15))+' per month':
+            'PPF: '+fmt(Math.round(sur*.15))+' per month plus NPS Tier I: '+fmt(Math.round(sur*.15))+' per month',
+         'International Index Fund SIP (Motilal Oswal Nasdaq or PPFAS): '+fmt(Math.round(sur*.20))+' per month',
+         'Claim 80C Rs1.5L plus 80CCD(1B) Rs50K for total Rs2L tax deduction annually',
+         'Review every 6 months and increase all SIPs by 10% each April'];
+    }
+  }else{
+    if(hor==='Short'){
+      i=[{n:'Balanced Advantage Fund via SIP',p:50,ret:'10-14%',w:'Dynamic allocation limits extreme downside versus pure equity. Safer entry for short horizon high-risk investor.'},
+         {n:'Midcap Mutual Fund via SIP',p:30,ret:'14-20% (volatile)',w:'High upside potential. Only invest what you can afford to lose in the short term.'},
+         {n:'Liquid Fund as buffer',p:20,ret:'6.5-7%',w:'Keeps 20% accessible — avoids forced redemption of equity at a loss if goal arrives early.'}];
+      r=['Midcap funds can fall sharply over short timeframes — not suitable for essential goals',
+         'High risk plus short horizon is a dangerous combination — revisit if goal is critical',
+         'Current sideways market sentiment means volatility could increase at any time'];
+      a=['Start BAF SIP: '+fmt(Math.round(sur*.50))+' per month on Groww or Zerodha',
+         'Start Midcap MF SIP: '+fmt(Math.round(sur*.30))+' per month — only money you can afford to lose short term',
+         'Park '+fmt(Math.round(sur*.20))+' per month in a Liquid Fund as your buffer',
+         'Set a strict review date 2 months before your goal — shift to debt if market is down',
+         'Do NOT use this allocation for critical goals like emergency fund or school fees'];
+    }else{
+      i=[{n:'Midcap plus Smallcap MF Mix via SIP',p:45,ret:'14-22%',w:'Long compounding runway plus higher risk equals significantly higher wealth creation over 7+ years.'},
+         {n:'Sectoral or Thematic Fund (Infra, IT, Pharma)',p:25,ret:'12-25% (high variance)',w:'Concentrated bets on structural growth themes. High risk and high reward. Cap at 25% of portfolio.'},
+         {n:'International or US Index Fund',p:20,ret:'10-16% in USD',w:'Geographic diversification. Buffers INR weakness. Nasdaq exposure for global tech growth.'},
+         {n:'Direct Equity in Nifty 50 stocks',p:10,ret:'Variable',w:'For hands-on investors. Start with Nifty 50 blue chips before exploring mid or small caps.'}];
+      r=['Smallcap funds can fall 50% or more in downturns — requires 5+ year minimum commitment',
+         'Sectoral funds carry high concentration risk — wrong sector call can destroy returns',
+         'International funds capped at Rs7L per year overseas limit and subject to global macro risks',
+         'Direct equity requires research, time and strong emotional discipline'];
+      a=['Start Midcap SIP: '+fmt(Math.round(sur*.25))+' per month plus Smallcap SIP: '+fmt(Math.round(sur*.20))+' per month',
+         'Start Sectoral or Thematic SIP: '+fmt(Math.round(sur*.25))+' per month — pick 1 or 2 themes maximum',
+         'Start International Index Fund SIP (Motilal Oswal Nasdaq or PPFAS): '+fmt(Math.round(sur*.20))+' per month',
+         'Allocate '+fmt(Math.round(sur*.10))+' per month to direct equity via Zerodha or Groww',
+         'Annual review every April — rebalance if any single sector exceeds 30% of total portfolio'];
+    }
+  }
+  return {i:i,r:r,a:a};
+}
+
+function draw(p,age,sur,goal,risk,hor,tax,port){
+  var sd=[
+    {l:'Age',v:age+' yrs'},
+    {l:'Monthly SIP',v:fmt(sur)},
+    {l:'Goal',v:goal},
+    {l:'Risk',v:risk},
+    {l:'Horizon',v:hor==='VeryLong'?'7+ years':hor==='Long'?'3-7 years':hor==='Medium'?'1-3 years':'Less than 1 yr'},
+    {l:'Tax Bracket',v:tax==='Nil'?'Nil':tax+'%'},
+    {l:'Existing',v:port}
+  ];
+  var sh='';
+  sd.forEach(function(s){sh+='<div class="si"><span>'+s.l+'</span><strong>'+s.v+'</strong></div>';});
+  $('rsum').innerHTML=sh;
+
+  var ah='';
+  p.i.forEach(function(x){
+    ah+='<div class="ab">'
+      +'<div class="al"><span>'+x.n+'</span><span>'+x.p+'%</span></div>'
+      +'<div class="abg"><div class="abar" style="width:'+x.p+'%"></div></div>'
+      +'<div class="amt">'+fmt(Math.round(sur*x.p/100))+' per month</div>'
+      +'</div>';
+  });
+  $('ralloc').innerHTML=ah;
+
+  var wh='';
+  p.i.forEach(function(x){
+    wh+='<tr><td><strong>'+x.n+'</strong></td><td>'+x.w+'</td><td>'+x.ret+'</td></tr>';
+  });
+  $('rwhy').innerHTML=wh;
+
+  var rh='';
+  p.r.forEach(function(x){rh+='<span class="rp">'+x+'</span>';});
+  $('rrisks').innerHTML=rh;
+
+  var ac='';
+  p.a.forEach(function(x,i){
+    ac+='<div class="as"><div class="an">'+(i+1)+'</div><div class="at">'+x+actionPills(x)+'</div></div>';
+  });
+  $('ract').innerHTML=ac;
+
+  // Feature 4 call
+  drawProjection(p,age,sur,goal,risk,hor);
+}
+
+// ── Feature 4: Wealth Growth Projection ───────────────────────────────────
+var _projChart=null;
+function drawProjection(p,age,sur,goal,risk,hor){
+  // derive blended expected rate from plan instruments
+  var rates={low:{Short:6.5,Medium:7.5,Long:8,VeryLong:9},
+              moderate:{Short:10,Medium:11,Long:12,VeryLong:13},
+              high:{Short:11,Medium:13,Long:15,VeryLong:17}};
+  var rkey=risk.toLowerCase();
+  var rate=(rates[rkey]&&rates[rkey][hor])||10;
+  var fxdRate=6.5; // conservative fixed-return scenario
+  var horizonYrs={Short:1,Medium:3,Long:7,VeryLong:15};
+  var yrs=horizonYrs[hor]||5;
+  var months=yrs*12;
+  var labels=[],vals=[],fdvals=[],invested=[];
+  var corpus=0,fdCorpus=0,total=0;
+  var mr=rate/100/12, fmr=fxdRate/100/12;
+  for(var m=1;m<=months;m++){
+    corpus=(corpus+sur)*(1+mr);
+    fdCorpus=(fdCorpus+sur)*(1+fmr);
+    total+=sur;
+    if(m%6===0||m===months){
+      labels.push('Y'+(m/12).toFixed(1));
+      vals.push(Math.round(corpus));
+      fdvals.push(Math.round(fdCorpus));
+      invested.push(total);
+    }
+  }
+  var wealth=vals[vals.length-1];
+  var invested_total=invested[invested.length-1];
+  var gain=wealth-invested_total;
+  var msgs={
+    Retirement:'Your '+yrs+'-year SIP could build a retirement corpus of <strong>'+fmt(wealth)+'</strong> — <strong>'+fmt(gain)+'</strong> in pure growth at '+rate+'% p.a.',
+    'Child\'s Education':'At '+rate+'% p.a., your SIP grows to <strong>'+fmt(wealth)+'</strong> over '+yrs+' years — enough to fund a quality college education in India.',
+    'Home Purchase':'In '+yrs+' years your SIP could accumulate <strong>'+fmt(wealth)+'</strong> — a solid down payment or full purchase fund.',
+    'Wealth Creation':'Your disciplined '+fmt(sur)+'/month SIP could compound to <strong>'+fmt(wealth)+'</strong> by year '+yrs+' at '+rate+'% p.a.',
+    'Emergency Fund':'Building fast: projected corpus of <strong>'+fmt(wealth)+'</strong> in '+yrs+' year'+( yrs>1?'s':'')+'.',
+    Wedding:'At '+rate+'% p.a., your plan targets <strong>'+fmt(wealth)+'</strong> over '+yrs+' years — well-planned for a dream wedding.',
+    Travel:'Your SIP could grow to <strong>'+fmt(wealth)+'</strong> over '+yrs+' year'+(yrs>1?'s':'')+' — your dream trip, fully funded.'
+  };
+  var msg=msgs[goal]||('Projected corpus: <strong>'+fmt(wealth)+'</strong> over '+yrs+' years at '+rate+'% p.a.');
+  $('projmsg').innerHTML='<span style="color:#f9c74f">📌</span> '+msg+'<br><span style="font-size:.78rem;color:rgba(255,255,255,.4)">Assumes consistent SIP, '+rate+'% blended return. Actual returns vary.</span>';
+  if(_projChart){_projChart.destroy();}
+  var ctx=document.getElementById('projChart').getContext('2d');
+  _projChart=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:labels,
+      datasets:[
+        {label:'Projected ('+rate+'% p.a.)',data:vals,borderColor:'#f9c74f',backgroundColor:'rgba(249,199,79,.12)',fill:true,tension:.4,pointRadius:2},
+        {label:'Conservative ('+fxdRate+'% FD)',data:fdvals,borderColor:'#aad4f5',backgroundColor:'rgba(170,212,245,.07)',fill:true,tension:.4,pointRadius:2,borderDash:[5,4]},
+        {label:'Amount Invested',data:invested,borderColor:'rgba(255,255,255,.3)',backgroundColor:'transparent',fill:false,tension:0,pointRadius:0,borderDash:[3,3]}
+      ]
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{labels:{color:'#f0f0f0',font:{size:10}}},
+        tooltip:{callbacks:{label:function(c){return c.dataset.label+': '+fmt(c.raw);}}}
+      },
+      scales:{
+        x:{ticks:{color:'#aad4f5',font:{size:9}},grid:{color:'rgba(255,255,255,.05)'}},
+        y:{ticks:{color:'#aad4f5',callback:function(v){return v>=1e7?'₹'+(v/1e7).toFixed(1)+'Cr':v>=1e5?'₹'+(v/1e5).toFixed(0)+'L':'₹'+v;}},grid:{color:'rgba(255,255,255,.05)'}}
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>
