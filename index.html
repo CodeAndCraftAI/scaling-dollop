@@ -76,24 +76,38 @@ tr:last-child td{border-bottom:none}
   <h1>🇮🇳 Smart Invest India</h1>
   <p class="sub">Personalized investment plan based on your profile &amp; live market data</p>
   <div class="card">
-    <div class="ct">📊 Current Market Context</div>
+    <div class="ct" style="display:flex;justify-content:space-between;align-items:center">
+      <span>📊 Current Market Context</span>
+      <button onclick="fetchMarketData()" id="refreshBtn" style="background:rgba(249,199,79,.15);border:1px solid rgba(249,199,79,.4);color:#f9c74f;border-radius:8px;padding:4px 10px;font-size:.75rem;cursor:pointer;transition:opacity .2s">🔄 Refresh</button>
+    </div>
     <div class="ticker">
-      <div class="tick"><span>Nifty 50 <em style="font-size:.6rem;opacity:.6">(Apr 2025)</em></span><strong>23,648</strong>
+      <div class="tick">
+        <span>Nifty 50 <em id="nifty-change" style="font-size:.6rem;opacity:.7"></em></span>
+        <strong id="nifty-val">—</strong>
         <div class="tip">India's benchmark index of the top 50 NSE stocks. A sideways or falling Nifty can signal caution for equity investors; a rising Nifty boosts equity fund NAVs.</div>
       </div>
-      <div class="tick"><span>Repo Rate <em style="font-size:.6rem;opacity:.6">(Apr 2025)</em></span><strong>5.25%</strong>
+      <div class="tick">
+        <span>Repo Rate <em id="repo-asof" style="font-size:.6rem;opacity:.6"></em></span>
+        <strong id="repo-val">—</strong>
         <div class="tip">Rate at which RBI lends to banks. Lower repo → cheaper loans &amp; better equity sentiment. Higher repo → FD rates rise, bond prices fall. Watch for RBI MPC announcements.</div>
       </div>
-      <div class="tick"><span>CPI Inflation <em style="font-size:.6rem;opacity:.6">(Apr 2025)</em></span><strong>3.48%</strong>
-        <div class="tip">Consumer Price Index inflation. Your real return = nominal return − inflation. At 3.48%, a 7% FD earns only ~3.5% in real terms. Equity historically beats inflation over 7+ years.</div>
+      <div class="tick">
+        <span>CPI Inflation <em id="cpi-asof" style="font-size:.6rem;opacity:.6"></em></span>
+        <strong id="cpi-val">—</strong>
+        <div class="tip">Consumer Price Index inflation. Your real return = nominal return − inflation. Equity historically beats inflation over 7+ years.</div>
       </div>
-      <div class="tick"><span>Top FD Rates</span><strong>6.5–7.5%</strong>
+      <div class="tick">
+        <span>Top FD Rates <em id="fd-asof" style="font-size:.6rem;opacity:.6"></em></span>
+        <strong id="fd-val">—</strong>
         <div class="tip">Best fixed deposit rates from major banks &amp; small finance banks. Lock in higher rates now before potential RBI rate cuts. DICGC insures up to ₹5L per bank.</div>
       </div>
-      <div class="tick"><span>Sentiment</span><strong>Sideways / Cautious</strong>
-        <div class="tip">Current market mood based on FII/DII flows, global cues, and Nifty trend. Sideways markets favour SIP investing — you accumulate more units at lower prices (rupee cost averaging).</div>
+      <div class="tick">
+        <span>Sentiment <em id="sentiment-change" style="font-size:.6rem;opacity:.7"></em></span>
+        <strong id="sentiment-val">—</strong>
+        <div class="tip">Current market mood derived from Nifty 50 daily price change. Sideways markets favour SIP investing — you accumulate more units at lower prices (rupee cost averaging).</div>
       </div>
     </div>
+    <div id="market-status" style="font-size:.7rem;color:rgba(255,255,255,.35);text-align:right;margin-top:6px"></div>
   </div>
   <div class="card">
     <div class="ct">📚 Mutual Fund Category Guide</div>
@@ -194,6 +208,79 @@ tr:last-child td{border-bottom:none}
 <script>
 var $=function(id){return document.getElementById(id)};
 var fmt=function(n){return '₹'+Number(n).toLocaleString('en-IN')};
+
+// ── Market Context: semi-static data (RBI/MoSPI — update when RBI MPC meets) ─
+var MARKET_STATIC={
+  repoRate:{value:'6.00%',   asOf:'Jun 2025'},
+  cpi:     {value:'3.16%',   asOf:'Apr 2025'},
+  fdRates: {value:'6.5–7.5%',asOf:'Jun 2025'}
+};
+
+function fetchMarketData(){
+  var btn=$('refreshBtn'),status=$('market-status');
+  if(btn) btn.disabled=true;
+  status.textContent='Fetching live data…';
+
+  // Populate semi-static fields immediately
+  $('repo-val').textContent=MARKET_STATIC.repoRate.value;
+  $('repo-asof').textContent='('+MARKET_STATIC.repoRate.asOf+')';
+  $('cpi-val').textContent=MARKET_STATIC.cpi.value;
+  $('cpi-asof').textContent='('+MARKET_STATIC.cpi.asOf+')';
+  $('fd-val').textContent=MARKET_STATIC.fdRates.value;
+  $('fd-asof').textContent='('+MARKET_STATIC.fdRates.asOf+')';
+
+  // Fetch Nifty 50 live from Yahoo Finance
+  var url='https://query1.finance.yahoo.com/v8/finance/chart/%5ENSEI?interval=1d&range=2d&events=none';
+  fetch(url)
+    .then(function(r){
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      return r.json();
+    })
+    .then(function(data){
+      var meta=data.chart.result[0].meta;
+      var price=meta.regularMarketPrice;
+      var prev=meta.previousClose||meta.chartPreviousClose||price;
+      var chg=price-prev;
+      var chgPct=(chg/prev)*100;
+      var sign=chg>=0?'+':'';
+
+      // Nifty value
+      $('nifty-val').textContent=Math.round(price).toLocaleString('en-IN');
+      $('nifty-change').textContent=sign+chg.toFixed(0)+' ('+sign+chgPct.toFixed(2)+'%)';
+      $('nifty-change').style.color=chg>=0?'#6fcf97':'#ff8080';
+
+      // Derive sentiment from daily change %
+      var sent,sentNote;
+      if(chgPct>=1)       {sent='Bullish';        sentNote='+'+chgPct.toFixed(1)+'% today';}
+      else if(chgPct>=0.2){sent='Mildly Bullish'; sentNote='+'+chgPct.toFixed(1)+'% today';}
+      else if(chgPct>=-0.2){sent='Sideways';      sentNote=chgPct.toFixed(1)+'% today';}
+      else if(chgPct>=-1) {sent='Mildly Bearish'; sentNote=chgPct.toFixed(1)+'% today';}
+      else                 {sent='Bearish';        sentNote=chgPct.toFixed(1)+'% today';}
+
+      $('sentiment-val').textContent=sent;
+      $('sentiment-change').textContent='('+sentNote+')';
+      $('sentiment-change').style.color=chgPct>=0?'#6fcf97':'#ff8080';
+
+      var now=new Date();
+      status.textContent='Live data · Last updated: '+now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})+' · Nifty via Yahoo Finance';
+    })
+    .catch(function(){
+      // Fallback to last-known values if fetch fails
+      $('nifty-val').textContent='23,648';
+      $('nifty-change').textContent='(Apr 2025)';
+      $('nifty-change').style.color='';
+      $('sentiment-val').textContent='Sideways / Cautious';
+      $('sentiment-change').textContent='';
+      status.textContent='⚠ Live fetch failed — showing last-known values. Check network / ad-blocker.';
+    })
+    .finally(function(){
+      if(btn) btn.disabled=false;
+    });
+}
+
+// Auto-fetch on load, then refresh every 5 minutes
+fetchMarketData();
+setInterval(fetchMarketData, 5*60*1000);
 
 // ── Feature 1: MF Category Explainer ──────────────────────────────────────
 var MF_CATS=[
