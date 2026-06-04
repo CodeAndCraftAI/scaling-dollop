@@ -78,13 +78,13 @@ tr:last-child td{border-bottom:none}
   <div class="card">
     <div class="ct">📊 Current Market Context</div>
     <div class="ticker">
-      <div class="tick"><span>Nifty 50</span><strong>23,648</strong>
+      <div class="tick"><span>Nifty 50 <em style="font-size:.6rem;opacity:.6">(Apr 2025)</em></span><strong>23,648</strong>
         <div class="tip">India's benchmark index of the top 50 NSE stocks. A sideways or falling Nifty can signal caution for equity investors; a rising Nifty boosts equity fund NAVs.</div>
       </div>
-      <div class="tick"><span>Repo Rate</span><strong>5.25%</strong>
+      <div class="tick"><span>Repo Rate <em style="font-size:.6rem;opacity:.6">(Apr 2025)</em></span><strong>5.25%</strong>
         <div class="tip">Rate at which RBI lends to banks. Lower repo → cheaper loans &amp; better equity sentiment. Higher repo → FD rates rise, bond prices fall. Watch for RBI MPC announcements.</div>
       </div>
-      <div class="tick"><span>CPI Inflation</span><strong>3.48%</strong>
+      <div class="tick"><span>CPI Inflation <em style="font-size:.6rem;opacity:.6">(Apr 2025)</em></span><strong>3.48%</strong>
         <div class="tip">Consumer Price Index inflation. Your real return = nominal return − inflation. At 3.48%, a 7% FD earns only ~3.5% in real terms. Equity historically beats inflation over 7+ years.</div>
       </div>
       <div class="tick"><span>Top FD Rates</span><strong>6.5–7.5%</strong>
@@ -100,7 +100,7 @@ tr:last-child td{border-bottom:none}
     <p style="font-size:.82rem;color:#aad4f5;margin-bottom:12px">Tap a category to learn more. Chart shows typical long-term annual return range.</p>
     <div class="mfcat" id="mfcats"></div>
     <div class="mfinfo" id="mfinfo">Select a category above to see details.</div>
-    <canvas id="mfChart" height="180"></canvas>
+    <canvas id="mfChart" width="700" height="180"></canvas>
   </div>
   <div class="card">
     <div class="ct">👤 Your Profile</div>
@@ -170,7 +170,7 @@ tr:last-child td{border-bottom:none}
     </div>
     <div class="sec"><h3>📈 Wealth Growth Projection</h3>
       <div id="projmsg" style="font-size:.84rem;color:#aad4f5;margin-bottom:12px;line-height:1.6"></div>
-      <canvas id="projChart" height="200"></canvas>
+      <canvas id="projChart" width="700" height="200"></canvas>
     </div>
     <div class="sec"><h3>⚠️ Key Risks</h3><div id="rrisks"></div></div>
     <div class="sec"><h3>🚀 Action Plan</h3><div id="ract"></div></div>
@@ -262,7 +262,7 @@ function actionPills(text){
       rule.pills.forEach(function(p){
         if(!seen[p.l]){
           seen[p.l]=1;
-          html+='<a class="apill" href="'+p.u+'" target="_blank" rel="noopener">↗ '+p.l+'</a>';
+          html+='<a class="apill" href="'+p.u+'" target="_blank" rel="noopener noreferrer">↗ '+p.l+'</a>';
         }
       });
     }
