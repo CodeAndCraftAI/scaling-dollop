@@ -468,20 +468,34 @@ function actionPills(text){
 function dlPDF(){
   var {jsPDF}=window.jspdf;
   var doc=new jsPDF({unit:'mm',format:'a4'});
-  var W=210,mg=14,y=18,lh=7;
+  var W=210,mg=14,y=18;
+  // Helvetica lacks glyphs for ₹/⚠/•/— which jsPDF mis-measures, causing uneven
+  // letter-spacing and clipped lines — swap them for ASCII-safe equivalents.
+  function clean(s){
+    return String(s)
+      .replace(/₹/g,'Rs. ')
+      .replace(/⚠/g,'!')
+      .replace(/•/g,'-')
+      .replace(/—/g,'-')
+      .replace(/–/g,'-');
+  }
   function ln(txt,sz,bold,col){
-    doc.setFontSize(sz||11);
+    var fsz=sz||11;
+    doc.setFontSize(fsz);
     doc.setFont('helvetica',bold?'bold':'normal');
     if(col) doc.setTextColor(col[0],col[1],col[2]); else doc.setTextColor(60,60,60);
-    var lines=doc.splitTextToSize(txt,W-mg*2);
-    doc.text(lines,mg,y);
-    y+=lh*lines.length;
+    var lines=doc.splitTextToSize(clean(txt),W-mg*2);
+    var lineH=fsz*0.42;
+    lines.forEach(function(line,idx){
+      doc.text(line,mg,y+idx*lineH);
+    });
+    y+=lineH*lines.length+2;
   }
   function rule(){doc.setDrawColor(220,180,100);doc.line(mg,y,W-mg,y);y+=4;}
   doc.setFillColor(248,249,250);doc.rect(0,0,W,297,'F');
   doc.setFillColor(249,199,79);doc.rect(mg,10,W-mg*2,12,'F');
   doc.setFontSize(13);doc.setFont('helvetica','bold');doc.setTextColor(26,26,46);
-  doc.text('Smart Invest India — Personalized Plan',mg+3,18);
+  doc.text(clean('Smart Invest India — Personalized Plan'),mg+3,18);
   y=30;
   ln('Generated: '+new Date().toLocaleDateString('en-IN'),9,false,[120,120,120]);y+=2;
   rule();
@@ -518,7 +532,7 @@ function dlPDF(){
   });
   y+=4;
   doc.setFontSize(8);doc.setTextColor(140,140,140);
-  doc.text('Educational tool only — not SEBI-registered advice.',mg,y);
+  doc.text(clean('Educational tool only — not SEBI-registered advice.'),mg,y);
   doc.save('SmartInvestIndia_Plan.pdf');
 }
 
