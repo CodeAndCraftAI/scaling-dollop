@@ -4,104 +4,167 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Smart Invest India</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);min-height:100vh;color:#f0f0f0;padding:24px 16px}
-.wrap{max-width:760px;margin:0 auto}
-h1{text-align:center;color:#f9c74f;font-size:1.8rem;margin-bottom:6px}
-.sub{text-align:center;color:#aad4f5;font-size:.9rem;margin-bottom:28px}
-.card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);border-radius:14px;padding:24px;margin-bottom:20px}
-.ct{color:#f9c74f;font-size:1rem;font-weight:700;border-bottom:1px solid rgba(249,199,79,.3);padding-bottom:10px;margin-bottom:18px}
+body{font-family:'Inter',sans-serif;background:#f8f9fa;min-height:100vh;color:#1a1a2e;padding:0 0 24px}
+.wrap{max-width:840px;margin:0 auto;padding:0 16px}
+.hero{background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);padding:36px 16px 44px;margin-bottom:-24px}
+.hero .wrap{padding:0 16px}
+h1{text-align:center;color:#f9c74f;font-size:1.9rem;font-weight:800;margin-bottom:6px}
+.sub{text-align:center;color:#aad4f5;font-size:.92rem}
+.card{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:14px;padding:24px;margin-bottom:20px;box-shadow:0 2px 12px rgba(0,0,0,.08);position:relative;top:-24px;transition:transform .18s,box-shadow .18s}
+.ct{color:#1a1a2e;font-size:1.05rem;font-weight:700;border-left:5px solid #f9c74f;padding-left:12px;margin-bottom:18px}
 .ticker{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px}
-.tick{background:rgba(249,199,79,.1);border:1px solid rgba(249,199,79,.25);border-radius:8px;padding:7px 12px;flex:1 1 110px;text-align:center;font-size:.8rem;color:#f9c74f;position:relative;cursor:default}
-.tick span{display:block;color:#aad4f5;font-size:.68rem;margin-bottom:2px}
-.tick .tip{visibility:hidden;opacity:0;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#0f2027;border:1px solid rgba(249,199,79,.4);color:#f0f0f0;font-size:.74rem;padding:7px 10px;border-radius:8px;width:200px;line-height:1.5;z-index:99;text-align:left;transition:opacity .18s;pointer-events:none}
+.tick{background:#fff;border:1px solid rgba(0,0,0,.07);border-radius:10px;padding:9px 12px;flex:1 1 110px;text-align:center;font-size:.8rem;color:#f3722c;font-weight:700;position:relative;cursor:default;box-shadow:0 1px 6px rgba(0,0,0,.05)}
+.tick span{display:block;color:#777;font-size:.68rem;margin-bottom:3px;font-weight:600;text-transform:uppercase}
+.tick .badge{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;background:#3498db}
+.tick .tip{visibility:hidden;opacity:0;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1a1a2e;border:1px solid rgba(249,199,79,.4);color:#f0f0f0;font-size:.74rem;padding:7px 10px;border-radius:8px;width:200px;line-height:1.5;z-index:99;text-align:left;font-weight:400;transition:opacity .18s;pointer-events:none}
 .tick .tip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:rgba(249,199,79,.4)}
 .tick:hover .tip{visibility:visible;opacity:1}
+.tick:hover{transform:translateY(-2px)}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:500px){.grid{grid-template-columns:1fr}}
 .full{grid-column:1/-1}
 .field{display:flex;flex-direction:column;gap:5px}
-label{font-size:.75rem;color:#aad4f5;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
-input,select{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#f0f0f0;padding:9px 12px;font-size:.92rem;width:100%}
+label{font-size:.75rem;color:#777;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+input,select{background:#f8f9fa;border:1px solid rgba(0,0,0,.12);border-radius:8px;color:#1a1a2e;padding:9px 12px;font-size:.92rem;width:100%}
 input:focus,select:focus{outline:none;border-color:#f9c74f}
-select option{background:#1a2a3a}
-.btn{width:100%;padding:13px;background:linear-gradient(90deg,#f9c74f,#f3722c);color:#1a1a2e;font-size:1rem;font-weight:700;border:none;border-radius:10px;cursor:pointer;margin-top:14px;transition:opacity .2s}
-.btn:hover{opacity:.88}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.errmsg{background:rgba(255,80,80,.13);border:1px solid rgba(255,80,80,.4);border-radius:8px;color:#ff8888;padding:9px 13px;font-size:.85rem;margin-top:10px;display:none}
-.loader{text-align:center;padding:24px;color:#f9c74f;display:none;font-size:.95rem}
-.spin{display:inline-block;width:18px;height:18px;border:2px solid #f9c74f;border-top-color:transparent;border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle;margin-left:8px}
+.btn{width:100%;padding:13px;background:linear-gradient(90deg,#f9c74f,#f3722c);color:#1a1a2e;font-size:1rem;font-weight:700;border:none;border-radius:10px;cursor:pointer;margin-top:14px;transition:transform .18s,opacity .2s}
+.btn:hover{transform:translateY(-2px);opacity:.92}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.errmsg{background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.4);border-radius:8px;color:#e74c3c;padding:9px 13px;font-size:.85rem;margin-top:10px;display:none}
+.loader{text-align:center;padding:24px;color:#f3722c;display:none;font-size:.95rem}
+.spin{display:inline-block;width:18px;height:18px;border:2px solid #f3722c;border-top-color:transparent;border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle;margin-left:8px}
 @keyframes sp{to{transform:rotate(360deg)}}
 #out{display:none}
 .sec{margin-bottom:22px}
-.sec h3{color:#f9c74f;font-size:.95rem;margin-bottom:12px}
+.sec h3{color:#1a1a2e;font-size:.95rem;margin-bottom:12px;font-weight:700}
 .sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
-.si{background:rgba(255,255,255,.05);border-radius:8px;padding:9px 12px}
-.si span{display:block;font-size:.67rem;color:#aad4f5;text-transform:uppercase;margin-bottom:2px}
+.si{background:#f8f9fa;border-radius:8px;padding:9px 12px;border:1px solid rgba(0,0,0,.05)}
+.si span{display:block;font-size:.67rem;color:#777;text-transform:uppercase;margin-bottom:2px}
 .si strong{font-size:.88rem}
 .ab{margin-bottom:14px}
-.al{display:flex;justify-content:space-between;font-size:.85rem;color:#ddd;margin-bottom:4px}
-.abg{background:rgba(255,255,255,.1);border-radius:4px;height:8px}
+.al{display:flex;justify-content:space-between;font-size:.85rem;color:#1a1a2e;margin-bottom:4px;font-weight:600}
+.abg{background:#eee;border-radius:4px;height:8px}
 .abar{height:8px;border-radius:4px;background:linear-gradient(90deg,#f9c74f,#f3722c)}
-.amt{font-size:.74rem;color:#aad4f5;margin-top:3px}
+.amt{font-size:.74rem;color:#777;margin-top:3px}
 table{width:100%;border-collapse:collapse;font-size:.84rem}
-th{background:rgba(249,199,79,.13);color:#f9c74f;padding:8px 10px;text-align:left;border-bottom:1px solid rgba(255,255,255,.1)}
-td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.06);color:#ddd;vertical-align:top;line-height:1.5}
+th{background:rgba(249,199,79,.18);color:#1a1a2e;padding:8px 10px;text-align:left;border-bottom:1px solid rgba(0,0,0,.06)}
+td{padding:8px 10px;border-bottom:1px solid rgba(0,0,0,.05);color:#444;vertical-align:top;line-height:1.5}
 tr:last-child td{border-bottom:none}
-.rp{display:inline-block;padding:4px 11px;border-radius:20px;font-size:.76rem;font-weight:600;margin:3px;background:rgba(255,99,99,.15);color:#ff8080;border:1px solid #ff8080}
+.rp{display:inline-block;padding:4px 11px;border-radius:20px;font-size:.76rem;font-weight:600;margin:3px;background:rgba(231,76,60,.1);color:#e74c3c;border:1px solid rgba(231,76,60,.4)}
 .as{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}
 .an{background:#f9c74f;color:#1a1a2e;border-radius:50%;min-width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.78rem;flex-shrink:0}
-.at{color:#ddd;font-size:.88rem;line-height:1.5;padding-top:2px}
+.at{color:#444;font-size:.88rem;line-height:1.5;padding-top:2px}
 .apills{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
-.apill{display:inline-flex;align-items:center;gap:4px;padding:4px 11px;border-radius:20px;font-size:.72rem;font-weight:600;text-decoration:none;border:1px solid rgba(170,212,245,.35);color:#aad4f5;background:rgba(170,212,245,.08);transition:background .18s}
-.apill:hover{background:rgba(170,212,245,.2)}
-.disc{font-size:.72rem;color:rgba(255,255,255,.32);text-align:center;margin-top:16px;line-height:1.6}
+.apill{display:inline-flex;align-items:center;gap:4px;padding:5px 13px;border-radius:20px;font-size:.72rem;font-weight:700;text-decoration:none;border:1px solid #f9c74f;color:#1a1a2e;background:linear-gradient(90deg,#f9c74f,#f3c66f);transition:transform .15s,opacity .18s}
+.apill:hover{opacity:.85;transform:translateY(-2px)}
+.disc{font-size:.72rem;color:#999;text-align:center;margin-top:16px;line-height:1.6}
 .share-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
-.sbtn{flex:1 1 120px;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px 14px;border-radius:10px;font-size:.88rem;font-weight:700;cursor:pointer;border:none;transition:opacity .2s}
-.sbtn:hover{opacity:.85}
+.sbtn{flex:1 1 120px;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px 14px;border-radius:10px;font-size:.88rem;font-weight:700;cursor:pointer;border:none;transition:transform .18s,opacity .2s}
+.sbtn:hover{opacity:.85;transform:translateY(-2px)}
 .sbtn.wa{background:#25D366;color:#fff}
-.sbtn.em{background:rgba(249,199,79,.15);border:1px solid rgba(249,199,79,.5);color:#f9c74f}
-.sbtn.pdf{background:rgba(243,114,44,.15);border:1px solid rgba(243,114,44,.5);color:#f3722c}
-.mfcat{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
-.mftag{padding:5px 13px;border-radius:20px;font-size:.76rem;font-weight:600;cursor:pointer;border:1px solid rgba(249,199,79,.4);background:rgba(249,199,79,.08);color:#f9c74f;transition:background .2s}
-.mftag.active,.mftag:hover{background:rgba(249,199,79,.22)}
-.mfinfo{background:rgba(255,255,255,.05);border-radius:10px;padding:13px 15px;font-size:.83rem;color:#ddd;line-height:1.6;min-height:48px;margin-bottom:14px}
+.sbtn.em{background:rgba(249,199,79,.18);border:1px solid #f9c74f;color:#a9760a}
+.sbtn.pdf{background:rgba(243,114,44,.12);border:1px solid #f3722c;color:#f3722c}
+/* Philosophy */
+.phil-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:650px){.phil-grid{grid-template-columns:1fr}}
+.phil-card{background:#fff;border-top:4px solid #f9c74f;border-radius:12px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.07);transition:transform .18s,box-shadow .18s}
+.phil-card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.12)}
+.phil-card .icon{font-size:1.8rem;margin-bottom:8px}
+.phil-card h4{font-size:1rem;margin-bottom:8px;color:#1a1a2e}
+.phil-card p{font-size:.85rem;color:#555;line-height:1.6}
+/* News */
+.news-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:700px){.news-grid{grid-template-columns:1fr}}
+.news-card{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:12px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);transition:transform .18s,box-shadow .18s;display:flex;flex-direction:column;gap:8px}
+.news-card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.12)}
+.ntag{display:inline-block;align-self:flex-start;padding:3px 10px;border-radius:20px;font-size:.68rem;font-weight:700;color:#fff}
+.ntag.blue{background:#3498db}
+.ntag.purple{background:#9b59b6}
+.ntag.orange{background:#f3722c}
+.ntag.green{background:#2ecc71}
+.news-card h4{font-size:.92rem;color:#1a1a2e;line-height:1.4}
+.news-meta{font-size:.74rem;color:#888}
+.news-card a{font-size:.8rem;font-weight:700;color:#f3722c;text-decoration:none}
+.news-card a:hover{text-decoration:underline}
+.news-note{font-size:.74rem;color:#999;margin-top:6px;text-align:center;line-height:1.6}
+/* Instruments */
+.inst-card{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:12px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.05);overflow:hidden}
+.inst-head{padding:15px 18px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:.92rem;color:#1a1a2e;transition:background .15s}
+.inst-head:hover{background:#f8f9fa}
+.inst-head .arrow{transition:transform .2s;color:#f3722c}
+.inst-card.open .inst-head .arrow{transform:rotate(90deg)}
+.inst-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.inst-card.open .inst-body{max-height:4000px}
+.inst-body-in{padding:0 18px 20px;font-size:.85rem;color:#444;line-height:1.6}
+.pill-row{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.riskpill{display:inline-block;padding:4px 12px;border-radius:20px;font-size:.72rem;font-weight:700}
+.riskpill.Low{background:rgba(46,204,113,.15);color:#27ae60;border:1px solid #2ecc71}
+.riskpill.Moderate{background:rgba(52,152,219,.15);color:#2980b9;border:1px solid #3498db}
+.riskpill.High{background:rgba(231,76,60,.15);color:#c0392b;border:1px solid #e74c3c}
+.inst-meta{font-size:.78rem;color:#666;margin:4px 0}
+.inst-meta b{color:#1a1a2e}
+.subtype-tags{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 10px}
+.mftag{padding:5px 13px;border-radius:20px;font-size:.76rem;font-weight:600;cursor:pointer;border:1px solid #f9c74f;background:rgba(249,199,79,.1);color:#a9760a;transition:background .2s}
+.mftag.active,.mftag:hover{background:#f9c74f;color:#1a1a2e}
+.mfinfo{background:#f8f9fa;border-radius:10px;padding:13px 15px;font-size:.83rem;color:#444;line-height:1.6;min-height:48px;margin-bottom:14px;border:1px solid rgba(0,0,0,.05)}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
+<div class="hero">
+  <div class="wrap">
+    <h1>🇮🇳 Smart Invest India</h1>
+    <p class="sub">Personalized investment plan based on your profile &amp; live market data</p>
+  </div>
+</div>
 <div class="wrap">
-  <h1>🇮🇳 Smart Invest India</h1>
-  <p class="sub">Personalized investment plan based on your profile &amp; live market data</p>
   <div class="card">
     <div class="ct">📊 Current Market Context</div>
     <div class="ticker">
-      <div class="tick"><span>Nifty 50</span><strong>23,648</strong>
+      <div class="tick"><span><i class="badge" style="background:#3498db"></i>Nifty 50</span><strong>23,648</strong>
         <div class="tip">India's benchmark index of the top 50 NSE stocks. A sideways or falling Nifty can signal caution for equity investors; a rising Nifty boosts equity fund NAVs.</div>
       </div>
-      <div class="tick"><span>Repo Rate</span><strong>5.25%</strong>
+      <div class="tick"><span><i class="badge" style="background:#f3722c"></i>Repo Rate</span><strong>5.25%</strong>
         <div class="tip">Rate at which RBI lends to banks. Lower repo → cheaper loans &amp; better equity sentiment. Higher repo → FD rates rise, bond prices fall. Watch for RBI MPC announcements.</div>
       </div>
-      <div class="tick"><span>CPI Inflation</span><strong>3.48%</strong>
+      <div class="tick"><span><i class="badge" style="background:#e74c3c"></i>CPI Inflation</span><strong>3.48%</strong>
         <div class="tip">Consumer Price Index inflation. Your real return = nominal return − inflation. At 3.48%, a 7% FD earns only ~3.5% in real terms. Equity historically beats inflation over 7+ years.</div>
       </div>
-      <div class="tick"><span>Top FD Rates</span><strong>6.5–7.5%</strong>
+      <div class="tick"><span><i class="badge" style="background:#2ecc71"></i>Top FD Rates</span><strong>6.5–7.5%</strong>
         <div class="tip">Best fixed deposit rates from major banks &amp; small finance banks. Lock in higher rates now before potential RBI rate cuts. DICGC insures up to ₹5L per bank.</div>
       </div>
-      <div class="tick"><span>Sentiment</span><strong>Sideways / Cautious</strong>
+      <div class="tick"><span><i class="badge" style="background:#9b59b6"></i>Sentiment</span><strong>Sideways / Cautious</strong>
         <div class="tip">Current market mood based on FII/DII flows, global cues, and Nifty trend. Sideways markets favour SIP investing — you accumulate more units at lower prices (rupee cost averaging).</div>
       </div>
     </div>
   </div>
+
   <div class="card">
-    <div class="ct">📚 Mutual Fund Category Guide</div>
-    <p style="font-size:.82rem;color:#aad4f5;margin-bottom:12px">Tap a category to learn more. Chart shows typical long-term annual return range.</p>
-    <div class="mfcat" id="mfcats"></div>
-    <div class="mfinfo" id="mfinfo">Select a category above to see details.</div>
-    <canvas id="mfChart" height="180"></canvas>
+    <div class="ct">🌅 Our Philosophy</div>
+    <div class="phil-grid">
+      <div class="phil-card"><div class="icon">🎓</div><h4>Educate First</h4><p>We believe every Indian deserves to understand where their money goes. We explain every instrument in plain language — no jargon, no confusion.</p></div>
+      <div class="phil-card"><div class="icon">🧭</div><h4>Guide Always</h4><p>Whether you are 22 and just starting out or 55 and planning retirement, we tailor guidance to your unique situation, goals and comfort with risk.</p></div>
+      <div class="phil-card"><div class="icon">🌱</div><h4>Grow Together</h4><p>Our mission is to make wealth creation accessible to every Indian — from metro cities to small towns — regardless of income, age or financial background.</p></div>
+    </div>
   </div>
+
+  <div class="card">
+    <div class="ct">📰 Market News &amp; Top Stories</div>
+    <div class="news-grid" id="newsGrid"></div>
+    <p class="news-note">News links open external sites. Smart Invest India is not responsible for third-party content.</p>
+  </div>
+
+  <div class="card">
+    <div class="ct">📚 Financial Instruments Guide</div>
+    <p style="font-size:.82rem;color:#777;margin-bottom:14px">Tap an instrument to expand and learn more — explained in plain English.</p>
+    <div id="instGuide"></div>
+  </div>
+
   <div class="card">
     <div class="ct">👤 Your Profile</div>
     <div class="grid">
@@ -169,7 +232,7 @@ tr:last-child td{border-bottom:none}
       <tbody id="rwhy"></tbody></table>
     </div>
     <div class="sec"><h3>📈 Wealth Growth Projection</h3>
-      <div id="projmsg" style="font-size:.84rem;color:#aad4f5;margin-bottom:12px;line-height:1.6"></div>
+      <div id="projmsg" style="font-size:.84rem;color:#666;margin-bottom:12px;line-height:1.6"></div>
       <canvas id="projChart" height="200"></canvas>
     </div>
     <div class="sec"><h3>⚠️ Key Risks</h3><div id="rrisks"></div></div>
@@ -195,82 +258,170 @@ tr:last-child td{border-bottom:none}
 var $=function(id){return document.getElementById(id)};
 var fmt=function(n){return '₹'+Number(n).toLocaleString('en-IN')};
 
-// ── Feature 1: MF Category Explainer ──────────────────────────────────────
+// ── Market News ────────────────────────────────────────────────────────────
+var NEWS=[
+  {headline:'Nifty 50 holds steady above 23,600 as IT and banking stocks lead recovery', source:'Economic Times', date:'4 Jun 2026', url:'https://economictimes.indiatimes.com/markets', tag:'India Markets'},
+  {headline:'RBI keeps repo rate unchanged at 5.25%, signals data-dependent stance ahead', source:'Livemint', date:'3 Jun 2026', url:'https://www.livemint.com', tag:'RBI/Policy'},
+  {headline:'SIP inflows cross ₹28,000 crore in May as retail investors stay the course', source:'Moneycontrol', date:'2 Jun 2026', url:'https://www.moneycontrol.com', tag:'MF/SIP'},
+  {headline:'US Fed signals pause on rate cuts; Asian markets react with mild caution', source:'Reuters', date:'1 Jun 2026', url:'https://www.reuters.com/business/finance', tag:'Global Impact'},
+  {headline:'Gold prices steady near record highs as investors flock to Sovereign Gold Bonds', source:'Business Today', date:'31 May 2026', url:'https://www.businesstoday.in', tag:'India Markets'},
+  {headline:'Global tech rally lifts international index funds; Nasdaq-linked schemes shine', source:'Bloomberg', date:'30 May 2026', url:'https://www.bloomberg.com/asia', tag:'Global Impact'}
+];
+var TAG_CLASS={'India Markets':'blue','Global Impact':'purple','RBI/Policy':'orange','MF/SIP':'green'};
+(function renderNews(){
+  var html='';
+  NEWS.forEach(function(n){
+    html+='<div class="news-card">'
+      +'<span class="ntag '+(TAG_CLASS[n.tag]||'blue')+'">'+n.tag+'</span>'
+      +'<h4>'+n.headline+'</h4>'
+      +'<div class="news-meta">'+n.source+' • '+n.date+'</div>'
+      +'<a href="'+n.url+'" target="_blank" rel="noopener">Read More →</a>'
+      +'</div>';
+  });
+  $('newsGrid').innerHTML=html;
+})();
+
+// ── Financial Instruments Guide ────────────────────────────────────────────
 var MF_CATS=[
-  {name:'Liquid Fund',       min:6, max:7,  info:'Invests in overnight/short-term instruments. Redeemable in 1 business day. Ideal parking for emergency money. Risk: near-zero.'},
-  {name:'Short Duration',    min:7, max:8,  info:'Debt funds with 1–3 year maturity profile. Outperform FDs over 1-2 years. Subject to interest-rate risk if rates rise sharply.'},
-  {name:'Cons. Hybrid',      min:8, max:10, info:'~80% debt + 20% equity. Smooth ride with mild equity upside. Good first step for conservative investors wanting a bit more than FD.'},
-  {name:'Balanced Advantage',min:9, max:12, info:'Dynamically shifts equity/debt by market valuations. Cushions falls; captures rallies. Suitable for moderate-risk investors in all horizons.'},
-  {name:'Flexi Cap',         min:11,max:14, info:'Invests freely across large, mid and small caps. Fund manager has full flexibility. Best for 3+ year SIPs. Core long-term holding.'},
-  {name:'ELSS (Tax Saver)',  min:12,max:15, info:'Equity fund with 80C benefit saving up to ₹46,800/yr for 30% bracket. 3-year lock-in per SIP instalment — shortest among 80C options.'},
+  {name:'Large Cap',         min:9, max:12, info:'Invests in India\'s top 100 companies by market value. Steadier, more predictable growth with lower volatility than mid/small caps. A solid core holding.'},
   {name:'Mid Cap',           min:14,max:20, info:'Invests in companies ranked 101–250 by market cap. High growth potential but 30-40% falls in corrections. Needs 5+ year horizon.'},
   {name:'Small Cap',         min:15,max:22, info:'Ranks 251+ by market cap. Highest long-term wealth creator but can fall 50%+ in bear markets. Only for long horizon + strong nerves.'},
-  {name:'Sectoral/Thematic', min:12,max:25, info:'Concentrated bets on one sector (IT, Pharma, Infra). Can massively outperform — or underperform. Cap at 15-25% of total portfolio.'},
-  {name:'International/US',  min:10,max:16, info:'Invests in global equities (often US/Nasdaq). Adds geographic diversification and USD exposure. Buffers INR depreciation over time.'}
+  {name:'Flexi Cap',         min:11,max:14, info:'Invests freely across large, mid and small caps. Fund manager has full flexibility. Best for 3+ year SIPs. Core long-term holding.'},
+  {name:'ELSS',              min:12,max:15, info:'Equity fund with 80C benefit saving up to ₹46,800/yr for 30% bracket. 3-year lock-in per SIP instalment — shortest among 80C options.'},
+  {name:'Cons. Hybrid',      min:8, max:10, info:'~80% debt + 20% equity. Smooth ride with mild equity upside. Good first step for conservative investors wanting a bit more than FD.'},
+  {name:'Balanced Advantage',min:9, max:12, info:'Dynamically shifts equity/debt by market valuations. Cushions falls; captures rallies. Suitable for moderate-risk investors in all horizons.'}
 ];
-(function initMFChart(){
+
+var INSTRUMENTS=[
+  {id:'mf', icon:'📈', name:'Mutual Funds', expl:'A mutual fund pools money from many investors and invests it in stocks, bonds or other assets, managed by professionals. SIPs let you invest a fixed amount every month, smoothing out market ups and downs.',
+   returns:'8% – 22% p.a. (varies by category)', risk:'Moderate', lockin:'None (except ELSS: 3 years)', suited:'Long-term wealth creation across all risk profiles', link:'https://www.amfiindia.com/investor-corner/knowledge-center', linkLabel:'amfiindia.com'},
+  {id:'fd', icon:'🏦', name:'Fixed Deposit (FD)', expl:'You deposit a lump sum with a bank for a fixed period at a guaranteed interest rate. It is one of the safest and most familiar investments for Indians, insured up to ₹5 lakh by DICGC.',
+   returns:'6.5% – 7.5% p.a.', risk:'Low', lockin:'Chosen tenure (penalty on early withdrawal)', suited:'Capital safety, short-term goals, conservative investors', link:'https://www.bankbazaar.com/fixed-deposit.html', linkLabel:'bankbazaar.com'},
+  {id:'ppf', icon:'🛡️', name:'Public Provident Fund (PPF)', expl:'A government-backed long-term savings scheme offering tax-free, compounding interest. Contributions, interest and maturity amount are all exempt from tax (EEE status) — ideal for retirement planning.',
+   returns:'~7.1% p.a. (tax-free)', risk:'Low', lockin:'15 years (partial withdrawal allowed after 7 years)', suited:'Long-term, tax-saving, risk-averse investors in higher tax brackets', link:'https://www.indiapost.gov.in/Financial/pages/content/post-office-saving-schemes.aspx', linkLabel:'indiapost.gov.in'},
+  {id:'nps', icon:'🧓', name:'National Pension System (NPS)', expl:'A government-regulated retirement savings scheme that invests across equity, corporate bonds and government securities. Offers extra tax deduction of ₹50,000 under Section 80CCD(1B) on top of the regular 80C limit.',
+   returns:'9% – 12% p.a. (market-linked, blended)', risk:'Moderate', lockin:'Until age 60 (40% must go into annuity)', suited:'Retirement planning, investors wanting extra tax deduction', link:'https://enps.nsdl.com/eNPS/NationalPensionSystem.html', linkLabel:'enps.nsdl.com'},
+  {id:'sgb', icon:'🪙', name:'Sovereign Gold Bond (SGB)', expl:'Government securities denominated in grams of gold — an alternative to holding physical gold. You earn a fixed 2.5% annual interest plus the benefit of any rise in gold prices, with capital gains tax-free at maturity.',
+   returns:'8% – 11% p.a. + 2.5% fixed interest', risk:'Moderate', lockin:'8 years (early exit allowed after year 5)', suited:'Inflation hedge, portfolio diversification, gold investors', link:'https://www.rbi.org.in', linkLabel:'rbi.org.in'},
+  {id:'po', icon:'✉️', name:'Post Office Schemes (RD, MIS, Time Deposit)', expl:'Sovereign-backed small savings schemes run through India Post — Recurring Deposit (RD) for monthly savings, Monthly Income Scheme (MIS) for steady income, and Time Deposits similar to bank FDs. Extremely safe and accessible even in small towns.',
+   returns:'6.7% – 7.5% p.a.', risk:'Low', lockin:'Varies by scheme (typically 1-5 years)', suited:'Risk-averse savers, semi-urban and rural investors, predictable income seekers', link:'https://www.indiapost.gov.in', linkLabel:'indiapost.gov.in'},
+  {id:'eq', icon:'📊', name:'Direct Equity / Stocks', expl:'Buying shares of listed companies directly through a stockbroker (demat account). Offers the highest potential returns but requires research, time, and the emotional discipline to ride out volatility.',
+   returns:'Variable — historically 12%+ p.a. over long term', risk:'High', lockin:'None (but needs long-term holding for best results)', suited:'Hands-on investors with research appetite and high risk tolerance', link:'https://zerodha.com/varsity', linkLabel:'zerodha.com'},
+  {id:'intl', icon:'🌍', name:'International / US Index Funds', expl:'Mutual funds that invest in global markets — often tracking US indices like the Nasdaq or S&P 500. They add geographic diversification, exposure to global tech giants, and act as a natural hedge against rupee depreciation.',
+   returns:'10% – 16% p.a. (in USD terms)', risk:'Moderate', lockin:'None', suited:'Diversification beyond India, long-term investors wanting global exposure', link:'https://groww.in/mutual-funds/filter?category=INTERNATIONAL', linkLabel:'groww.in'}
+];
+
+(function renderInstruments(){
   var html='';
-  MF_CATS.forEach(function(c,i){html+='<span class="mftag" onclick="pickMF('+i+')">'+c.name+'</span>';});
-  $('mfcats').innerHTML=html;
+  INSTRUMENTS.forEach(function(ins){
+    html+='<div class="inst-card" id="inst-'+ins.id+'">'
+      +'<div class="inst-head" onclick="toggleInst(\''+ins.id+'\')"><span>'+ins.icon+' '+ins.name+'</span><span class="arrow">▶</span></div>'
+      +'<div class="inst-body"><div class="inst-body-in">'
+      +'<p>'+ins.expl+'</p>'
+      +'<div class="pill-row"><span class="riskpill '+ins.risk+'">Risk: '+ins.risk+'</span></div>'
+      +'<div class="inst-meta"><b>Typical returns:</b> '+ins.returns+'</div>'
+      +'<div class="inst-meta"><b>Lock-in:</b> '+ins.lockin+'</div>'
+      +'<div class="inst-meta"><b>Best suited for:</b> '+ins.suited+'</div>';
+    if(ins.id==='mf'){
+      html+='<p style="margin-top:10px;font-size:.82rem;color:#777">Explore mutual fund sub-types and their typical long-term annual return ranges below — invest ₹1,00,000 and see how it could grow:</p>'
+        +'<div class="subtype-tags" id="mfcats"></div>'
+        +'<div class="mfinfo" id="mfinfo">Select a sub-type above to see details.</div>'
+        +'<div class="pill-row" id="mfTimeline"></div>'
+        +'<canvas id="mfChart" height="180"></canvas>';
+    }
+    html+=actionLink(ins.link,ins.linkLabel)
+      +'</div></div></div>';
+  });
+  $('instGuide').innerHTML=html;
+  initMFSection();
+})();
+function actionLink(url,label){
+  if(!url){url='https://www.amfiindia.com';label='amfiindia.com';}
+  return '<a class="apill" href="'+url+'" target="_blank" rel="noopener" style="margin-top:10px">↗ Learn More — '+label+'</a>';
+}
+function toggleInst(id){
+  var el=$('inst-'+id);
+  el.classList.toggle('open');
+}
+
+// MF sub-type chart with toggleable timeline (1/2/3/5 years on ₹1,00,000)
+var MF_TIMELINES=[1,2,3,5];
+var _mfTimelineYrs=3,_mfChart=null,_mfActiveIdx=0;
+function initMFSection(){
+  var tagHtml='';
+  MF_CATS.forEach(function(c,i){tagHtml+='<span class="mftag" onclick="pickMF('+i+')">'+c.name+'</span>';});
+  $('mfcats').innerHTML=tagHtml;
+  var tlHtml='';
+  MF_TIMELINES.forEach(function(y){tlHtml+='<span class="mftag'+(y===_mfTimelineYrs?' active':'')+'" onclick="setMFTimeline('+y+',this)">'+y+' yr</span>';});
+  $('mfTimeline').innerHTML=tlHtml;
+  buildMFChart();
+  pickMF(0);
+}
+function setMFTimeline(y,el){
+  _mfTimelineYrs=y;
+  $('mfTimeline').querySelectorAll('.mftag').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');
+  buildMFChart();
+}
+function buildMFChart(){
+  if(_mfChart){_mfChart.destroy();}
+  var principal=100000;
   var ctx=document.getElementById('mfChart').getContext('2d');
-  window._mfChart=new Chart(ctx,{
+  _mfChart=new Chart(ctx,{
     type:'bar',
     data:{
       labels:MF_CATS.map(function(c){return c.name;}),
       datasets:[
-        {label:'Min %',data:MF_CATS.map(function(c){return c.min;}),backgroundColor:'rgba(170,212,245,0.45)',borderColor:'#aad4f5',borderWidth:1,borderRadius:4},
-        {label:'Max %',data:MF_CATS.map(function(c){return c.max;}),backgroundColor:'rgba(249,199,79,0.45)',borderColor:'#f9c74f',borderWidth:1,borderRadius:4}
+        {label:'Value at min return ('+_mfTimelineYrs+' yr)',data:MF_CATS.map(function(c){return Math.round(principal*Math.pow(1+c.min/100,_mfTimelineYrs));}),backgroundColor:'rgba(52,152,219,0.45)',borderColor:'#3498db',borderWidth:1,borderRadius:4},
+        {label:'Value at max return ('+_mfTimelineYrs+' yr)',data:MF_CATS.map(function(c){return Math.round(principal*Math.pow(1+c.max/100,_mfTimelineYrs));}),backgroundColor:'rgba(249,199,79,0.55)',borderColor:'#f9c74f',borderWidth:1,borderRadius:4}
       ]
     },
     options:{
       responsive:true,
       plugins:{
-        legend:{labels:{color:'#f0f0f0',font:{size:11}}},
-        tooltip:{callbacks:{label:function(c){return c.dataset.label+': '+c.raw+'%';}}}
+        legend:{labels:{color:'#1a1a2e',font:{size:11}}},
+        tooltip:{callbacks:{label:function(c){return c.dataset.label+': '+fmt(c.raw);}}}
       },
       scales:{
-        x:{ticks:{color:'#aad4f5',font:{size:9.5},maxRotation:35},grid:{color:'rgba(255,255,255,.06)'}},
-        y:{ticks:{color:'#aad4f5',callback:function(v){return v+'%';}},grid:{color:'rgba(255,255,255,.06)'},min:0,max:28}
+        x:{ticks:{color:'#666',font:{size:9.5},maxRotation:35},grid:{color:'rgba(0,0,0,.05)'}},
+        y:{ticks:{color:'#666',callback:function(v){return fmt(v);}},grid:{color:'rgba(0,0,0,.05)'}}
       }
     }
   });
-})();
-// ── Feature 6: Action Plan Pill Buttons ───────────────────────────────────
-var PILL_RULES=[
-  {kw:['Kuvera','kuvera'],          pills:[{l:'Open Kuvera',u:'https://kuvera.in'}]},
-  {kw:['MFCentral','mfcentral'],    pills:[{l:'Open MFCentral',u:'https://www.mfcentral.com'}]},
-  {kw:['Groww','groww'],            pills:[{l:'Open Groww',u:'https://groww.in'}]},
-  {kw:['Zerodha','zerodha'],        pills:[{l:'Open Zerodha',u:'https://zerodha.com'}]},
-  {kw:['eNPS','enps','NPS'],        pills:[{l:'Open eNPS Portal',u:'https://enps.nsdl.com'}]},
-  {kw:['PPF','Public Provident'],   pills:[{l:'SBI PPF',u:'https://retail.onlinesbi.sbi'},{l:'Post Office PPF',u:'https://www.indiapost.gov.in'}]},
-  {kw:['Post Office RD','India Post'],pills:[{l:'India Post App',u:'https://www.indiapost.gov.in'}]},
-  {kw:['SGB','Sovereign Gold'],     pills:[{l:'RBI SGB Info',u:'https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx'},{l:'Buy via Groww',u:'https://groww.in/gold-bonds'}]},
-  {kw:['Fixed Deposit','FD','recurring FD'],pills:[{l:'SBI FD',u:'https://retail.onlinesbi.sbi'},{l:'Compare FD Rates',u:'https://www.bankbazaar.com/fixed-deposit.html'}]},
-  {kw:['80C','80CCD','tax deduction','ELSS'],pills:[{l:'Income Tax Portal',u:'https://www.incometax.gov.in'}]},
-  {kw:['Liquid Fund','Liquid MF'],  pills:[{l:'Compare on Kuvera',u:'https://kuvera.in/explore/funds?category=liquid'}]},
-  {kw:['Midcap','Mid Cap','mid-cap','Midcap SIP'],pills:[{l:'Explore on Groww',u:'https://groww.in/mutual-funds/mid-cap-funds'}]},
-  {kw:['Smallcap','Small Cap','small-cap'],pills:[{l:'Explore on Groww',u:'https://groww.in/mutual-funds/small-cap-funds'}]},
-  {kw:['International','Nasdaq','PPFAS'],pills:[{l:'Explore on Kuvera',u:'https://kuvera.in'}]},
-  {kw:['Sectoral','Thematic'],      pills:[{l:'Sectoral Funds',u:'https://groww.in/mutual-funds/sectoral-thematic-funds'}]},
-  {kw:['Flexi-Cap','Flexi Cap','FlexiCap'],pills:[{l:'Flexi Cap Funds',u:'https://groww.in/mutual-funds/flexi-cap-funds'}]}
-];
-function actionPills(text){
-  var seen={},html='';
-  PILL_RULES.forEach(function(rule){
-    var matched=rule.kw.some(function(k){return text.indexOf(k)!==-1;});
-    if(matched){
-      rule.pills.forEach(function(p){
-        if(!seen[p.l]){
-          seen[p.l]=1;
-          html+='<a class="apill" href="'+p.u+'" target="_blank" rel="noopener">↗ '+p.l+'</a>';
-        }
-      });
-    }
-  });
-  return html?'<div class="apills">'+html+'</div>':'';
+}
+function pickMF(i){
+  _mfActiveIdx=i;
+  var tags=$('mfcats').querySelectorAll('.mftag');
+  tags.forEach(function(t){t.classList.remove('active');});
+  tags[i].classList.add('active');
+  $('mfinfo').textContent=MF_CATS[i].info;
 }
 
-// ── Feature 3: jsPDF Download ─────────────────────────────────────────────
+// ── Action Plan Pill Buttons (verified working links, with fallback) ──────
+var PILL_RULES=[
+  {kw:['Liquid Fund','Liquid MF','Liquid Mutual Fund'], label:'Open on Kuvera', url:'https://www.kuvera.in'},
+  {kw:['PPF','Public Provident'],                       label:'Open PPF — India Post', url:'https://www.indiapost.gov.in/Financial/pages/content/post-office-saving-schemes.aspx'},
+  {kw:['eNPS','enps','NPS Tier'],                       label:'Open eNPS Portal', url:'https://enps.nsdl.com/eNPS/NationalPensionSystem.html'},
+  {kw:['ELSS','Flexi-Cap','Flexi Cap','FlexiCap','Midcap','Mid Cap','mid-cap','Smallcap','Small Cap','small-cap'], label:'Explore on MFCentral', url:'https://www.mfcentral.com'},
+  {kw:['SGB','Sovereign Gold'],                         label:'RBI SGB Info', url:'https://www.rbi.org.in/Scripts/BS_ViewMasCirculardetails.aspx'},
+  {kw:['Fixed Deposit','FD','recurring FD','Post Office RD','Post Office MIS','Time Deposit'], label:'Compare FD Rates', url:'https://www.bankbazaar.com/fixed-deposit.html'},
+  {kw:['Direct Equity','Nifty 50 stocks','Zerodha'],    label:'Open Zerodha', url:'https://zerodha.com/open-account'},
+  {kw:['International','Nasdaq','US Index','PPFAS'],    label:'Explore on Groww', url:'https://groww.in/mutual-funds/filter?category=INTERNATIONAL'},
+  {kw:['Mutual Fund','MF SIP','SIP','Sectoral','Thematic','Conservative Hybrid','Balanced Advantage'], label:'Explore on Kuvera', url:'https://www.kuvera.in'}
+];
+var FALLBACK_PILL={label:'General Investing — AMFI', url:'https://www.amfiindia.com'};
+function actionPills(text){
+  for(var i=0;i<PILL_RULES.length;i++){
+    var rule=PILL_RULES[i];
+    var matched=rule.kw.some(function(k){return text.indexOf(k)!==-1;});
+    if(matched && rule.url){
+      return '<div class="apills"><a class="apill" href="'+rule.url+'" target="_blank" rel="noopener">↗ '+rule.label+'</a></div>';
+    }
+  }
+  return '<div class="apills"><a class="apill" href="'+FALLBACK_PILL.url+'" target="_blank" rel="noopener">↗ '+FALLBACK_PILL.label+'</a></div>';
+}
+
+// ── jsPDF Download ─────────────────────────────────────────────────────────
 function dlPDF(){
   var {jsPDF}=window.jspdf;
   var doc=new jsPDF({unit:'mm',format:'a4'});
@@ -278,65 +429,57 @@ function dlPDF(){
   function ln(txt,sz,bold,col){
     doc.setFontSize(sz||11);
     doc.setFont('helvetica',bold?'bold':'normal');
-    if(col) doc.setTextColor(col[0],col[1],col[2]); else doc.setTextColor(220,220,220);
+    if(col) doc.setTextColor(col[0],col[1],col[2]); else doc.setTextColor(60,60,60);
     var lines=doc.splitTextToSize(txt,W-mg*2);
     doc.text(lines,mg,y);
     y+=lh*lines.length;
   }
-  function rule(){doc.setDrawColor(80,120,140);doc.line(mg,y,W-mg,y);y+=4;}
-  // dark background
-  doc.setFillColor(15,32,39);doc.rect(0,0,W,297,'F');
-  // header
+  function rule(){doc.setDrawColor(220,180,100);doc.line(mg,y,W-mg,y);y+=4;}
+  doc.setFillColor(248,249,250);doc.rect(0,0,W,297,'F');
   doc.setFillColor(249,199,79);doc.rect(mg,10,W-mg*2,12,'F');
   doc.setFontSize(13);doc.setFont('helvetica','bold');doc.setTextColor(26,26,46);
   doc.text('Smart Invest India — Personalized Plan',mg+3,18);
   y=30;
-  // date
-  ln('Generated: '+new Date().toLocaleDateString('en-IN'),9,false,[170,212,245]);y+=2;
+  ln('Generated: '+new Date().toLocaleDateString('en-IN'),9,false,[120,120,120]);y+=2;
   rule();
-  // profile summary
-  ln('PROFILE SUMMARY',10,true,[249,199,79]);y+=1;
+  ln('PROFILE SUMMARY',10,true,[200,140,20]);y+=1;
   document.querySelectorAll('#rsum .si').forEach(function(el){
     var sp=el.querySelector('span'),st=el.querySelector('strong');
-    if(sp&&st) ln(sp.textContent+': '+st.textContent,10,false,[220,220,220]);
+    if(sp&&st) ln(sp.textContent+': '+st.textContent,10,false,[60,60,60]);
   });
   y+=3;rule();
-  // allocation
-  ln('RECOMMENDED ALLOCATION',10,true,[249,199,79]);y+=1;
+  ln('RECOMMENDED ALLOCATION',10,true,[200,140,20]);y+=1;
   document.querySelectorAll('#ralloc .ab').forEach(function(ab){
     var al=ab.querySelector('.al'),amt=ab.querySelector('.amt');
     if(al) ln('• '+al.children[0].textContent+' — '+al.children[1].textContent+(amt?' ('+amt.textContent+')':''),10);
   });
   y+=3;rule();
-  // why table
-  ln('WHY EACH INSTRUMENT',10,true,[249,199,79]);y+=1;
+  ln('WHY EACH INSTRUMENT',10,true,[200,140,20]);y+=1;
   document.querySelectorAll('#rwhy tr').forEach(function(tr){
     var tds=tr.querySelectorAll('td');
     if(tds.length){
-      ln(tds[0].textContent,10,true,[249,199,79]);
+      ln(tds[0].textContent,10,true,[200,140,20]);
       ln(tds[1].textContent,9);
-      ln('Expected returns: '+tds[2].textContent,9,false,[170,212,245]);
+      ln('Expected returns: '+tds[2].textContent,9,false,[80,140,180]);
       y+=2;
     }
   });
   rule();
-  // risks
-  ln('KEY RISKS',10,true,[249,199,79]);y+=1;
+  ln('KEY RISKS',10,true,[200,140,20]);y+=1;
   document.querySelectorAll('#rrisks .rp').forEach(function(r){ln('⚠ '+r.textContent,9);});
   y+=3;rule();
-  // action plan
-  ln('ACTION PLAN',10,true,[249,199,79]);y+=1;
+  ln('ACTION PLAN',10,true,[200,140,20]);y+=1;
   document.querySelectorAll('#ract .as').forEach(function(as,i){
     var at=as.querySelector('.at');
     if(at) ln((i+1)+'. '+at.firstChild.textContent.trim(),10);
   });
   y+=4;
-  doc.setFontSize(8);doc.setTextColor(120,140,150);
+  doc.setFontSize(8);doc.setTextColor(140,140,140);
   doc.text('Educational tool only — not SEBI-registered advice.',mg,y);
   doc.save('SmartInvestIndia_Plan.pdf');
 }
 
-// ── Feature 2: Share buttons ───────────────────────────────────────────────
+// ── Share buttons ──────────────────────────────────────────────────────────
 function buildShareText(){
   var age=$('fa').value,sur=$('fs').value,goal=$('fg').value,risk=$('fr').value,hor=$('fh').value;
   var lines=['🇮🇳 *Smart Invest India — My Investment Plan*',''];
@@ -363,12 +506,6 @@ function shareEmail(){
   window.location.href='mailto:?subject='+sub+'&body='+body;
 }
 
-function pickMF(i){
-  var tags=$('mfcats').querySelectorAll('.mftag');
-  tags.forEach(function(t){t.classList.remove('active');});
-  tags[i].classList.add('active');
-  $('mfinfo').textContent=MF_CATS[i].info;
-}
 function serr(m){$('err').textContent=m;$('err').style.display='block';}
 
 function go(){
@@ -540,20 +677,18 @@ function draw(p,age,sur,goal,risk,hor,tax,port){
   });
   $('ract').innerHTML=ac;
 
-  // Feature 4 call
   drawProjection(p,age,sur,goal,risk,hor);
 }
 
-// ── Feature 4: Wealth Growth Projection ───────────────────────────────────
+// ── Wealth Growth Projection ───────────────────────────────────────────────
 var _projChart=null;
 function drawProjection(p,age,sur,goal,risk,hor){
-  // derive blended expected rate from plan instruments
   var rates={low:{Short:6.5,Medium:7.5,Long:8,VeryLong:9},
               moderate:{Short:10,Medium:11,Long:12,VeryLong:13},
               high:{Short:11,Medium:13,Long:15,VeryLong:17}};
   var rkey=risk.toLowerCase();
   var rate=(rates[rkey]&&rates[rkey][hor])||10;
-  var fxdRate=6.5; // conservative fixed-return scenario
+  var fxdRate=6.5;
   var horizonYrs={Short:1,Medium:3,Long:7,VeryLong:15};
   var yrs=horizonYrs[hor]||5;
   var months=yrs*12;
@@ -584,7 +719,7 @@ function drawProjection(p,age,sur,goal,risk,hor){
     Travel:'Your SIP could grow to <strong>'+fmt(wealth)+'</strong> over '+yrs+' year'+(yrs>1?'s':'')+' — your dream trip, fully funded.'
   };
   var msg=msgs[goal]||('Projected corpus: <strong>'+fmt(wealth)+'</strong> over '+yrs+' years at '+rate+'% p.a.');
-  $('projmsg').innerHTML='<span style="color:#f9c74f">📌</span> '+msg+'<br><span style="font-size:.78rem;color:rgba(255,255,255,.4)">Assumes consistent SIP, '+rate+'% blended return. Actual returns vary.</span>';
+  $('projmsg').innerHTML='<span style="color:#f3722c">📌</span> '+msg+'<br><span style="font-size:.78rem;color:#999">Assumes consistent SIP, '+rate+'% blended return. Actual returns vary.</span>';
   if(_projChart){_projChart.destroy();}
   var ctx=document.getElementById('projChart').getContext('2d');
   _projChart=new Chart(ctx,{
@@ -592,20 +727,20 @@ function drawProjection(p,age,sur,goal,risk,hor){
     data:{
       labels:labels,
       datasets:[
-        {label:'Projected ('+rate+'% p.a.)',data:vals,borderColor:'#f9c74f',backgroundColor:'rgba(249,199,79,.12)',fill:true,tension:.4,pointRadius:2},
-        {label:'Conservative ('+fxdRate+'% FD)',data:fdvals,borderColor:'#aad4f5',backgroundColor:'rgba(170,212,245,.07)',fill:true,tension:.4,pointRadius:2,borderDash:[5,4]},
-        {label:'Amount Invested',data:invested,borderColor:'rgba(255,255,255,.3)',backgroundColor:'transparent',fill:false,tension:0,pointRadius:0,borderDash:[3,3]}
+        {label:'Projected ('+rate+'% p.a.)',data:vals,borderColor:'#f9c74f',backgroundColor:'rgba(249,199,79,.15)',fill:true,tension:.4,pointRadius:2},
+        {label:'Conservative ('+fxdRate+'% FD)',data:fdvals,borderColor:'#3498db',backgroundColor:'rgba(52,152,219,.08)',fill:true,tension:.4,pointRadius:2,borderDash:[5,4]},
+        {label:'Amount Invested',data:invested,borderColor:'rgba(0,0,0,.25)',backgroundColor:'transparent',fill:false,tension:0,pointRadius:0,borderDash:[3,3]}
       ]
     },
     options:{
       responsive:true,
       plugins:{
-        legend:{labels:{color:'#f0f0f0',font:{size:10}}},
+        legend:{labels:{color:'#1a1a2e',font:{size:10}}},
         tooltip:{callbacks:{label:function(c){return c.dataset.label+': '+fmt(c.raw);}}}
       },
       scales:{
-        x:{ticks:{color:'#aad4f5',font:{size:9}},grid:{color:'rgba(255,255,255,.05)'}},
-        y:{ticks:{color:'#aad4f5',callback:function(v){return v>=1e7?'₹'+(v/1e7).toFixed(1)+'Cr':v>=1e5?'₹'+(v/1e5).toFixed(0)+'L':'₹'+v;}},grid:{color:'rgba(255,255,255,.05)'}}
+        x:{ticks:{color:'#666',font:{size:9}},grid:{color:'rgba(0,0,0,.05)'}},
+        y:{ticks:{color:'#666',callback:function(v){return v>=1e7?'₹'+(v/1e7).toFixed(1)+'Cr':v>=1e5?'₹'+(v/1e5).toFixed(0)+'L':'₹'+v;}},grid:{color:'rgba(0,0,0,.05)'}}
       }
     }
   });
