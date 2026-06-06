@@ -10,7 +10,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Inter',sans-serif;background:#f8f9fa;min-height:100vh;color:#1a1a2e;padding:0 0 24px}
 .wrap{max-width:840px;margin:0 auto;padding:0 16px}
-.hero{background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);padding:36px 16px 44px;margin-bottom:-24px}
+.hero{background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);padding:36px 16px 56px;margin-bottom:-24px}
 .hero .wrap{padding:0 16px}
 h1{text-align:center;color:#f9c74f;font-size:1.9rem;font-weight:800;margin-bottom:6px}
 .sub{text-align:center;color:#aad4f5;font-size:.92rem}
@@ -24,6 +24,10 @@ h1{text-align:center;color:#f9c74f;font-size:1.9rem;font-weight:800;margin-botto
 .tick .tip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:rgba(249,199,79,.4)}
 .tick:hover .tip{visibility:visible;opacity:1}
 .tick:hover{transform:translateY(-2px)}
+.refresh-btn{border:1px solid #f9c74f;background:rgba(249,199,79,.12);color:#a9760a;font-size:.74rem;font-weight:700;padding:6px 13px;border-radius:20px;cursor:pointer;transition:transform .15s,background .15s}
+.refresh-btn:hover{background:#f9c74f;color:#1a1a2e;transform:translateY(-2px)}
+.refresh-btn.spinning{animation:sp 1s linear infinite;display:inline-block}
+.mkt-updated{font-size:.7rem;color:#999;margin-top:8px;text-align:right}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:500px){.grid{grid-template-columns:1fr}}
 .full{grid-column:1/-1}
@@ -124,49 +128,16 @@ tr:last-child td{border-bottom:none}
 </div>
 <div class="wrap">
   <div class="card">
-    <div class="ct">📊 Current Market Context</div>
-    <div class="ticker">
-      <div class="tick"><span><i class="badge" style="background:#3498db"></i>Nifty 50</span><strong>23,648</strong>
-        <div class="tip">India's benchmark index of the top 50 NSE stocks. A sideways or falling Nifty can signal caution for equity investors; a rising Nifty boosts equity fund NAVs.</div>
-      </div>
-      <div class="tick"><span><i class="badge" style="background:#f3722c"></i>Repo Rate</span><strong>5.25%</strong>
-        <div class="tip">Rate at which RBI lends to banks. Lower repo → cheaper loans &amp; better equity sentiment. Higher repo → FD rates rise, bond prices fall. Watch for RBI MPC announcements.</div>
-      </div>
-      <div class="tick"><span><i class="badge" style="background:#e74c3c"></i>CPI Inflation</span><strong>3.48%</strong>
-        <div class="tip">Consumer Price Index inflation. Your real return = nominal return − inflation. At 3.48%, a 7% FD earns only ~3.5% in real terms. Equity historically beats inflation over 7+ years.</div>
-      </div>
-      <div class="tick"><span><i class="badge" style="background:#2ecc71"></i>Top FD Rates</span><strong>6.5–7.5%</strong>
-        <div class="tip">Best fixed deposit rates from major banks &amp; small finance banks. Lock in higher rates now before potential RBI rate cuts. DICGC insures up to ₹5L per bank.</div>
-      </div>
-      <div class="tick"><span><i class="badge" style="background:#9b59b6"></i>Sentiment</span><strong>Sideways / Cautious</strong>
-        <div class="tip">Current market mood based on FII/DII flows, global cues, and Nifty trend. Sideways markets favour SIP investing — you accumulate more units at lower prices (rupee cost averaging).</div>
-      </div>
+    <div class="ct" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <span>📊 Current Market Context</span>
+      <button class="refresh-btn" id="mktRefresh" onclick="refreshMarket()">🔄 Refresh</button>
     </div>
+    <div class="ticker" id="marketTicker"></div>
+    <p class="mkt-updated" id="mktUpdated"></p>
   </div>
 
   <div class="card">
-    <div class="ct">🌅 Our Philosophy</div>
-    <div class="phil-grid">
-      <div class="phil-card"><div class="icon">🎓</div><h4>Educate First</h4><p>We believe every Indian deserves to understand where their money goes. We explain every instrument in plain language — no jargon, no confusion.</p></div>
-      <div class="phil-card"><div class="icon">🧭</div><h4>Guide Always</h4><p>Whether you are 22 and just starting out or 55 and planning retirement, we tailor guidance to your unique situation, goals and comfort with risk.</p></div>
-      <div class="phil-card"><div class="icon">🌱</div><h4>Grow Together</h4><p>Our mission is to make wealth creation accessible to every Indian — from metro cities to small towns — regardless of income, age or financial background.</p></div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="ct">📰 Market News &amp; Top Stories</div>
-    <div class="news-grid" id="newsGrid"></div>
-    <p class="news-note">News links open external sites. Smart Invest India is not responsible for third-party content.</p>
-  </div>
-
-  <div class="card">
-    <div class="ct">📚 Financial Instruments Guide</div>
-    <p style="font-size:.82rem;color:#777;margin-bottom:14px">Tap an instrument to expand and learn more — explained in plain English.</p>
-    <div id="instGuide"></div>
-  </div>
-
-  <div class="card">
-    <div class="ct">👤 Your Profile</div>
+    <div class="ct">👤 Your Profile — Get Your Personalized Plan</div>
     <div class="grid">
       <div class="field"><label>Age</label><input type="number" id="fa" placeholder="e.g. 32" min="18" max="80"/></div>
       <div class="field"><label>Monthly Surplus (₹)</label><input type="number" id="fs" placeholder="e.g. 25000" min="500"/></div>
@@ -253,10 +224,80 @@ tr:last-child td{border-bottom:none}
     </div>
     <p class="disc">⚠️ Educational tool only — not SEBI-registered advice. Consult a certified financial planner before investing.</p>
   </div>
+
+  <div class="card">
+    <div class="ct">🌅 Our Philosophy</div>
+    <div class="phil-grid">
+      <div class="phil-card"><div class="icon">🎓</div><h4>Educate First</h4><p>We believe every Indian deserves to understand where their money goes. We explain every instrument in plain language — no jargon, no confusion.</p></div>
+      <div class="phil-card"><div class="icon">🧭</div><h4>Guide Always</h4><p>Whether you are 22 and just starting out or 55 and planning retirement, we tailor guidance to your unique situation, goals and comfort with risk.</p></div>
+      <div class="phil-card"><div class="icon">🌱</div><h4>Grow Together</h4><p>Our mission is to make wealth creation accessible to every Indian — from metro cities to small towns — regardless of income, age or financial background.</p></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ct">📰 Market News &amp; Top Stories</div>
+    <div class="news-grid" id="newsGrid"></div>
+    <p class="news-note">News links open external sites. Smart Invest India is not responsible for third-party content.</p>
+  </div>
+
+  <div class="card">
+    <div class="ct">📚 Financial Instruments Guide</div>
+    <p style="font-size:.82rem;color:#777;margin-bottom:14px">Tap an instrument to expand and learn more — explained in plain English.</p>
+    <div id="instGuide"></div>
+  </div>
 </div>
 <script>
 var $=function(id){return document.getElementById(id)};
 var fmt=function(n){return '₹'+Number(n).toLocaleString('en-IN')};
+
+// ── Live Market Context (simulated real-time ticker) ──────────────────────
+var MARKET_BASE=[
+  {key:'nifty', label:'Nifty 50', color:'#3498db', base:23648, fmt:function(v){return Math.round(v).toLocaleString('en-IN');}, jitter:120,
+   tip:'India\'s benchmark index of the top 50 NSE stocks. A sideways or falling Nifty can signal caution for equity investors; a rising Nifty boosts equity fund NAVs.'},
+  {key:'repo', label:'Repo Rate', color:'#f3722c', base:5.25, fmt:function(v){return v.toFixed(2)+'%';}, jitter:0,
+   tip:'Rate at which RBI lends to banks. Lower repo → cheaper loans &amp; better equity sentiment. Higher repo → FD rates rise, bond prices fall. Watch for RBI MPC announcements.'},
+  {key:'cpi', label:'CPI Inflation', color:'#e74c3c', base:3.48, fmt:function(v){return v.toFixed(2)+'%';}, jitter:0.12,
+   tip:'Consumer Price Index inflation. Your real return = nominal return − inflation. At current levels, a 7% FD earns only modest real returns. Equity historically beats inflation over 7+ years.'},
+  {key:'fd', label:'Top FD Rates', color:'#2ecc71', base:7.0, fmt:function(v){return (v-0.5).toFixed(1)+'–'+(v+0.5).toFixed(1)+'%';}, jitter:0.1,
+   tip:'Best fixed deposit rates from major banks &amp; small finance banks. Lock in higher rates now before potential RBI rate cuts. DICGC insures up to ₹5L per bank.'},
+  {key:'sentiment', label:'Sentiment', color:'#9b59b6', options:['Sideways / Cautious','Mildly Bullish','Range-bound','Cautiously Optimistic'], fmt:function(v){return v;},
+   tip:'Current market mood based on FII/DII flows, global cues, and Nifty trend. Sideways markets favour SIP investing — you accumulate more units at lower prices (rupee cost averaging).'}
+];
+var _mktRefreshing=false;
+function genMarketSnapshot(){
+  return MARKET_BASE.map(function(m){
+    var val;
+    if(m.options){
+      val=m.options[Math.floor(Math.random()*m.options.length)];
+    }else{
+      val=m.base+(Math.random()*2-1)*m.jitter;
+    }
+    return {key:m.key,label:m.label,color:m.color,tip:m.tip,display:m.fmt(val)};
+  });
+}
+function renderMarket(snapshot){
+  var html='';
+  snapshot.forEach(function(s){
+    html+='<div class="tick"><span><i class="badge" style="background:'+s.color+'"></i>'+s.label+'</span><strong>'+s.display+'</strong>'
+      +'<div class="tip">'+s.tip+'</div></div>';
+  });
+  $('marketTicker').innerHTML=html;
+  $('mktUpdated').textContent='Last updated: '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+' • Simulated live data for demo purposes';
+}
+function refreshMarket(){
+  if(_mktRefreshing) return;
+  _mktRefreshing=true;
+  var btn=$('mktRefresh');
+  btn.disabled=true;
+  btn.innerHTML='<span class="refresh-btn spinning" style="border:none;background:none;padding:0">🔄</span> Refreshing…';
+  setTimeout(function(){
+    renderMarket(genMarketSnapshot());
+    btn.innerHTML='🔄 Refresh';
+    btn.disabled=false;
+    _mktRefreshing=false;
+  },650);
+}
+renderMarket(genMarketSnapshot());
 
 // ── Market News ────────────────────────────────────────────────────────────
 var NEWS=[
@@ -294,7 +335,7 @@ var MF_CATS=[
 
 var INSTRUMENTS=[
   {id:'mf', icon:'📈', name:'Mutual Funds', expl:'A mutual fund pools money from many investors and invests it in stocks, bonds or other assets, managed by professionals. SIPs let you invest a fixed amount every month, smoothing out market ups and downs.',
-   returns:'8% – 22% p.a. (varies by category)', risk:'Moderate', lockin:'None (except ELSS: 3 years)', suited:'Long-term wealth creation across all risk profiles', link:'https://www.amfiindia.com/investor-corner/knowledge-center', linkLabel:'amfiindia.com'},
+   returns:'8% – 22% p.a. (varies by category)', risk:'Moderate', lockin:'None (except ELSS: 3 years)', suited:'Long-term wealth creation across all risk profiles', link:'https://www.amfiindia.com', linkLabel:'amfiindia.com'},
   {id:'fd', icon:'🏦', name:'Fixed Deposit (FD)', expl:'You deposit a lump sum with a bank for a fixed period at a guaranteed interest rate. It is one of the safest and most familiar investments for Indians, insured up to ₹5 lakh by DICGC.',
    returns:'6.5% – 7.5% p.a.', risk:'Low', lockin:'Chosen tenure (penalty on early withdrawal)', suited:'Capital safety, short-term goals, conservative investors', link:'https://www.bankbazaar.com/fixed-deposit.html', linkLabel:'bankbazaar.com'},
   {id:'ppf', icon:'🛡️', name:'Public Provident Fund (PPF)', expl:'A government-backed long-term savings scheme offering tax-free, compounding interest. Contributions, interest and maturity amount are all exempt from tax (EEE status) — ideal for retirement planning.',
@@ -327,7 +368,7 @@ var INSTRUMENTS=[
         +'<div class="subtype-tags" id="mfcats"></div>'
         +'<div class="mfinfo" id="mfinfo">Select a sub-type above to see details.</div>'
         +'<div class="pill-row" id="mfTimeline"></div>'
-        +'<canvas id="mfChart" height="180"></canvas>';
+        +'<div style="position:relative;height:220px"><canvas id="mfChart"></canvas></div>';
     }
     html+=actionLink(ins.link,ins.linkLabel)
       +'</div></div></div>';
@@ -378,6 +419,7 @@ function buildMFChart(){
     },
     options:{
       responsive:true,
+      maintainAspectRatio:false,
       plugins:{
         legend:{labels:{color:'#1a1a2e',font:{size:11}}},
         tooltip:{callbacks:{label:function(c){return c.dataset.label+': '+fmt(c.raw);}}}
