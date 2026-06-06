@@ -352,6 +352,10 @@ var INSTRUMENTS=[
    returns:'10% – 16% p.a. (in USD terms)', risk:'Moderate', lockin:'None', suited:'Diversification beyond India, long-term investors wanting global exposure', link:'https://groww.in/mutual-funds/filter?category=INTERNATIONAL', linkLabel:'groww.in'}
 ];
 
+// MF sub-type chart with toggleable timeline (1/2/3/5 years on ₹1,00,000)
+var MF_TIMELINES=[1,2,3,5];
+var _mfTimelineYrs=3,_mfChart=null,_mfActiveIdx=0;
+
 (function renderInstruments(){
   var html='';
   INSTRUMENTS.forEach(function(ins){
@@ -385,9 +389,6 @@ function toggleInst(id){
   el.classList.toggle('open');
 }
 
-// MF sub-type chart with toggleable timeline (1/2/3/5 years on ₹1,00,000)
-var MF_TIMELINES=[1,2,3,5];
-var _mfTimelineYrs=3,_mfChart=null,_mfActiveIdx=0;
 function initMFSection(){
   var tagHtml='';
   MF_CATS.forEach(function(c,i){tagHtml+='<span class="mftag" onclick="pickMF('+i+')">'+c.name+'</span>';});
