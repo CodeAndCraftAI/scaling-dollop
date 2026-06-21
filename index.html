@@ -235,9 +235,12 @@ tr:last-child td{border-bottom:none}
   </div>
 
   <div class="card">
-    <div class="ct">📰 Market News &amp; Top Stories</div>
+    <div class="ct" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <span>📰 Market News &amp; Top Stories</span>
+      <button onclick="fetchNews()" id="newsRefreshBtn" class="refresh-btn">🔄 Refresh</button>
+    </div>
     <div class="news-grid" id="newsGrid"></div>
-    <p class="news-note">News links open external sites. Smart Invest India is not responsible for third-party content.</p>
+    <p class="news-note" id="newsStatus">News links open external sites. Smart Invest India is not responsible for third-party content.</p>
   </div>
 
   <div class="card">
@@ -299,28 +302,87 @@ function refreshMarket(){
 }
 renderMarket(genMarketSnapshot());
 
-// ── Market News ────────────────────────────────────────────────────────────
-var NEWS=[
-  {headline:'Nifty 50 holds steady above 23,600 as IT and banking stocks lead recovery', source:'Economic Times', date:'4 Jun 2026', url:'https://economictimes.indiatimes.com/markets', tag:'India Markets'},
-  {headline:'RBI keeps repo rate unchanged at 5.25%, signals data-dependent stance ahead', source:'Livemint', date:'3 Jun 2026', url:'https://www.livemint.com', tag:'RBI/Policy'},
-  {headline:'SIP inflows cross ₹28,000 crore in May as retail investors stay the course', source:'Moneycontrol', date:'2 Jun 2026', url:'https://www.moneycontrol.com', tag:'MF/SIP'},
-  {headline:'US Fed signals pause on rate cuts; Asian markets react with mild caution', source:'Reuters', date:'1 Jun 2026', url:'https://www.reuters.com/business/finance', tag:'Global Impact'},
-  {headline:'Gold prices steady near record highs as investors flock to Sovereign Gold Bonds', source:'Business Today', date:'31 May 2026', url:'https://www.businesstoday.in', tag:'India Markets'},
-  {headline:'Global tech rally lifts international index funds; Nasdaq-linked schemes shine', source:'Bloomberg', date:'30 May 2026', url:'https://www.bloomberg.com/asia', tag:'Global Impact'}
+// ── Market News (live, India market/finance, last 14 days only) ───────────
+var NEWS_MAX_AGE_MS=14*24*60*60*1000;
+var NEWS_RSS_URL='https://news.google.com/rss/search?q=india%20stock%20market%20OR%20mutual%20fund%20OR%20RBI%20when:14d&hl=en-IN&gl=IN&ceid=IN:en';
+var TAG_RULES=[
+  {tag:'RBI/Policy', cls:'orange', re:/\bRBI\b|repo rate|monetary policy|inflation|CPI/i},
+  {tag:'MF/SIP', cls:'green', re:/mutual fund|\bSIP\b|\bNFO\b|AMC\b/i},
+  {tag:'Global Impact', cls:'purple', re:/\bFed\b|US markets|global|Nasdaq|Wall Street|dollar/i}
 ];
-var TAG_CLASS={'India Markets':'blue','Global Impact':'purple','RBI/Policy':'orange','MF/SIP':'green'};
-(function renderNews(){
+function classifyTag(title){
+  for(var i=0;i<TAG_RULES.length;i++){ if(TAG_RULES[i].re.test(title)) return TAG_RULES[i]; }
+  return {tag:'India Markets', cls:'blue'};
+}
+function parseRssItems(xmlText){
+  var doc=new DOMParser().parseFromString(xmlText,'text/xml');
+  var items=doc.querySelectorAll('item');
+  var out=[];
+  items.forEach(function(it){
+    var title=(it.querySelector('title')||{}).textContent||'';
+    var link=(it.querySelector('link')||{}).textContent||'';
+    var pubDate=(it.querySelector('pubDate')||{}).textContent||'';
+    var sourceEl=it.querySelector('source');
+    var source=sourceEl?sourceEl.textContent:'Google News';
+    var ts=pubDate?Date.parse(pubDate):NaN;
+    out.push({headline:title, url:link, source:source, ts:ts,
+      date:isNaN(ts)?'':new Date(ts).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})});
+  });
+  return out;
+}
+function fetchNewsSequential(sources){
+  if(!sources.length) return Promise.reject(new Error('all news sources failed'));
+  var src=sources[0], rest=sources.slice(1);
+  return fetch(src.url)
+    .then(function(r){ if(!r.ok) throw new Error('bad response'); return src.proxy?r.json().then(function(j){return j.contents;}):r.text(); })
+    .then(function(text){ var items=parseRssItems(text); if(!items.length) throw new Error('no items'); return items; })
+    .catch(function(){ return fetchNewsSequential(rest); });
+}
+function renderNews(items){
+  var now=Date.now();
+  var fresh=items
+    .filter(function(it){ return it.ts && (now-it.ts)<=NEWS_MAX_AGE_MS; })
+    .sort(function(a,b){ return b.ts-a.ts; })
+    .slice(0,9);
   var html='';
-  NEWS.forEach(function(n){
+  fresh.forEach(function(n){
+    var t=classifyTag(n.headline);
     html+='<div class="news-card">'
-      +'<span class="ntag '+(TAG_CLASS[n.tag]||'blue')+'">'+n.tag+'</span>'
+      +'<span class="ntag '+t.cls+'">'+t.tag+'</span>'
       +'<h4>'+n.headline+'</h4>'
-      +'<div class="news-meta">'+n.source+' • '+n.date+'</div>'
+      +'<div class="news-meta">'+n.source+(n.date?' • '+n.date:'')+'</div>'
       +'<a href="'+n.url+'" target="_blank" rel="noopener">Read More →</a>'
       +'</div>';
   });
-  $('newsGrid').innerHTML=html;
-})();
+  $('newsGrid').innerHTML=html||'<p style="font-size:.82rem;color:#999">No news from the last 14 days available right now.</p>';
+  return fresh.length>0;
+}
+function fetchNews(){
+  var btn=$('newsRefreshBtn'), status=$('newsStatus');
+  btn.disabled=true;
+  btn.innerHTML='<span class="refresh-btn spinning" style="border:none;background:none;padding:0">🔄</span> Refreshing…';
+  status.textContent='Fetching latest news…';
+  var sources=[
+    {url:NEWS_RSS_URL, proxy:false},
+    {url:'https://api.allorigins.win/get?url='+encodeURIComponent(NEWS_RSS_URL), proxy:true}
+  ];
+  fetchNewsSequential(sources)
+    .then(function(items){
+      var ok=renderNews(items);
+      status.textContent=ok
+        ? 'Updated: '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})+' • Showing news from the last 14 days only. Links open external sites.'
+        : 'No news from the last 14 days available right now.';
+    })
+    .catch(function(){
+      $('newsGrid').innerHTML='<p style="font-size:.82rem;color:#999">⚠ Could not fetch news right now.</p>';
+      status.textContent='⚠ News fetch failed — network or source blocked.';
+    })
+    .finally(function(){
+      btn.disabled=false;
+      btn.innerHTML='🔄 Refresh';
+    });
+}
+fetchNews();
 
 // ── Financial Instruments Guide ────────────────────────────────────────────
 var MF_CATS=[
