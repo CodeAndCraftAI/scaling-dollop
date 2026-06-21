@@ -314,8 +314,15 @@ function classifyTag(title){
   for(var i=0;i<TAG_RULES.length;i++){ if(TAG_RULES[i].re.test(title)) return TAG_RULES[i]; }
   return {tag:'India Markets', cls:'blue'};
 }
-function parseRssItems(xmlText){
+function sourceFromLink(link){
+  try{
+    var host=new URL(link).hostname.replace(/^www\./,'');
+    return host.split('.').slice(0,-1).join('.').replace(/^./,function(c){return c.toUpperCase();})||host;
+  }catch(e){ return 'News'; }
+}
+function parseRssXml(xmlText){
   var doc=new DOMParser().parseFromString(xmlText,'text/xml');
+  if(doc.querySelector('parsererror')) throw new Error('bad xml');
   var items=doc.querySelectorAll('item');
   var out=[];
   items.forEach(function(it){
@@ -323,19 +330,37 @@ function parseRssItems(xmlText){
     var link=(it.querySelector('link')||{}).textContent||'';
     var pubDate=(it.querySelector('pubDate')||{}).textContent||'';
     var sourceEl=it.querySelector('source');
-    var source=sourceEl?sourceEl.textContent:'Google News';
+    var source=sourceEl&&sourceEl.textContent?sourceEl.textContent:sourceFromLink(link);
     var ts=pubDate?Date.parse(pubDate):NaN;
     out.push({headline:title, url:link, source:source, ts:ts,
       date:isNaN(ts)?'':new Date(ts).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})});
   });
   return out;
 }
+function parseRss2Json(json){
+  if(!json||json.status!=='ok'||!json.items) throw new Error('bad rss2json response');
+  return json.items.map(function(it){
+    var ts=it.pubDate?Date.parse(it.pubDate.replace(' ','T')+'Z'):NaN;
+    return {headline:it.title||'', url:it.link||'', source:sourceFromLink(it.link||''), ts:ts,
+      date:isNaN(ts)?'':new Date(ts).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})};
+  });
+}
 function fetchNewsSequential(sources){
   if(!sources.length) return Promise.reject(new Error('all news sources failed'));
   var src=sources[0], rest=sources.slice(1);
   return fetch(src.url)
-    .then(function(r){ if(!r.ok) throw new Error('bad response'); return src.proxy?r.json().then(function(j){return j.contents;}):r.text(); })
-    .then(function(text){ var items=parseRssItems(text); if(!items.length) throw new Error('no items'); return items; })
+    .then(function(r){
+      if(!r.ok) throw new Error('bad response');
+      return (src.type==='rss2json'||src.type==='alloriginsxml')?r.json():r.text();
+    })
+    .then(function(data){
+      var items;
+      if(src.type==='rss2json') items=parseRss2Json(data);
+      else if(src.type==='alloriginsxml') items=parseRssXml(data.contents||'');
+      else items=parseRssXml(data);
+      if(!items.length) throw new Error('no items');
+      return items;
+    })
     .catch(function(){ return fetchNewsSequential(rest); });
 }
 function renderNews(items){
@@ -363,8 +388,10 @@ function fetchNews(){
   btn.innerHTML='<span class="refresh-btn spinning" style="border:none;background:none;padding:0">🔄</span> Refreshing…';
   status.textContent='Fetching latest news…';
   var sources=[
-    {url:NEWS_RSS_URL, proxy:false},
-    {url:'https://api.allorigins.win/get?url='+encodeURIComponent(NEWS_RSS_URL), proxy:true}
+    {url:'https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(NEWS_RSS_URL), type:'rss2json'},
+    {url:'https://api.allorigins.win/get?url='+encodeURIComponent(NEWS_RSS_URL), type:'alloriginsxml'},
+    {url:'https://corsproxy.io/?url='+encodeURIComponent(NEWS_RSS_URL), type:'xml'},
+    {url:NEWS_RSS_URL, type:'xml'}
   ];
   fetchNewsSequential(sources)
     .then(function(items){
