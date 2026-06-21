@@ -110,6 +110,16 @@ tr:last-child td{border-bottom:none}
     <div id="market-status" style="font-size:.7rem;color:rgba(255,255,255,.35);text-align:right;margin-top:6px"></div>
   </div>
   <div class="card">
+    <div class="ct" style="display:flex;justify-content:space-between;align-items:center">
+      <span>📰 Latest Market News</span>
+      <button onclick="fetchNews()" id="newsRefreshBtn" style="background:rgba(249,199,79,.15);border:1px solid rgba(249,199,79,.4);color:#f9c74f;border-radius:8px;padding:4px 10px;font-size:.75rem;cursor:pointer;transition:opacity .2s">🔄 Refresh</button>
+    </div>
+    <div id="news-list" style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-size:.82rem;color:rgba(255,255,255,.45)">Loading latest news…</div>
+    </div>
+    <div id="news-status" style="font-size:.7rem;color:rgba(255,255,255,.35);text-align:right;margin-top:6px"></div>
+  </div>
+  <div class="card">
     <div class="ct">📚 Mutual Fund Category Guide</div>
     <p style="font-size:.82rem;color:#aad4f5;margin-bottom:12px">Tap a category to learn more. Chart shows typical long-term annual return range.</p>
     <div class="mfcat" id="mfcats"></div>
@@ -298,6 +308,87 @@ function fetchMarketData(){
 // Auto-fetch on load, then refresh every 5 minutes
 fetchMarketData();
 setInterval(fetchMarketData, 5*60*1000);
+
+// ── Dynamic News Feed (India market/finance, last 14 days only) ───────────
+var NEWS_MAX_AGE_MS=14*24*60*60*1000;
+var NEWS_RSS_URL='https://news.google.com/rss/search?q=india%20stock%20market%20OR%20mutual%20fund%20OR%20RBI%20when:14d&hl=en-IN&gl=IN&ceid=IN:en';
+
+function parseRssXml(xmlText){
+  var doc=new DOMParser().parseFromString(xmlText,'text/xml');
+  var items=Array.prototype.slice.call(doc.querySelectorAll('item'));
+  return items.map(function(it){
+    var title=(it.querySelector('title')||{}).textContent||'';
+    var link=(it.querySelector('link')||{}).textContent||'';
+    var pubDate=(it.querySelector('pubDate')||{}).textContent||'';
+    var source=(it.querySelector('source')||{}).textContent||'';
+    return {title:title,link:link,pubDate:pubDate,source:source};
+  });
+}
+
+function fetchNewsSequential(sources){
+  if(!sources.length) return Promise.reject(new Error('all news sources failed'));
+  var src=sources[0],rest=sources.slice(1);
+  return fetch(src.url,{signal:AbortSignal.timeout?AbortSignal.timeout(8000):undefined})
+    .then(function(r){if(!r.ok) throw new Error('HTTP '+r.status); return r.text();})
+    .then(function(raw){
+      var xml=src.proxy?JSON.parse(raw).contents:raw;
+      var items=parseRssXml(xml);
+      if(!items.length) throw new Error('no items');
+      return items;
+    })
+    .catch(function(){return fetchNewsSequential(rest);});
+}
+
+function renderNews(items){
+  var now=Date.now();
+  var fresh=items
+    .map(function(it){return {title:it.title,link:it.link,source:it.source,ts:new Date(it.pubDate).getTime()};})
+    .filter(function(it){return it.ts && (now-it.ts)<=NEWS_MAX_AGE_MS;})
+    .sort(function(a,b){return b.ts-a.ts;})
+    .slice(0,8);
+
+  var list=$('news-list');
+  if(!fresh.length){
+    list.innerHTML='<div style="font-size:.82rem;color:rgba(255,255,255,.45)">No news from the last 14 days available right now.</div>';
+    return false;
+  }
+  list.innerHTML=fresh.map(function(it){
+    var days=Math.floor((now-it.ts)/(24*60*60*1000));
+    var ago=days<=0?'today':(days+'d ago');
+    return '<a href="'+it.link+'" target="_blank" rel="noopener noreferrer" style="display:block;text-decoration:none;color:#ddd;background:rgba(255,255,255,.05);border-radius:10px;padding:10px 13px;font-size:.82rem;line-height:1.4">'
+      +'<div>'+it.title.replace(/</g,'&lt;')+'</div>'
+      +'<div style="font-size:.7rem;color:rgba(255,255,255,.4);margin-top:4px">'+(it.source||'')+' · '+ago+'</div>'
+      +'</a>';
+  }).join('');
+  return true;
+}
+
+function fetchNews(){
+  var btn=$('newsRefreshBtn'),status=$('news-status');
+  if(btn) btn.disabled=true;
+  status.textContent='Fetching latest news…';
+
+  var sources=[
+    {url:NEWS_RSS_URL, proxy:false},
+    {url:'https://api.allorigins.win/get?url='+encodeURIComponent(NEWS_RSS_URL), proxy:true}
+  ];
+
+  fetchNewsSequential(sources)
+    .then(function(items){
+      var ok=renderNews(items);
+      var now=new Date();
+      status.textContent=(ok?'Updated ':'⚠ ')+now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    })
+    .catch(function(){
+      $('news-list').innerHTML='<div style="font-size:.82rem;color:rgba(255,255,255,.45)">⚠ Could not fetch news right now.</div>';
+      status.textContent='⚠ News fetch failed — network or source blocked.';
+    })
+    .finally(function(){
+      if(btn) btn.disabled=false;
+    });
+}
+
+fetchNews();
 
 // ── Feature 1: MF Category Explainer ──────────────────────────────────────
 var MF_CATS=[
