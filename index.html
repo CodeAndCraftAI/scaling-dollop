@@ -345,12 +345,13 @@ function parseRss2Json(json){
       date:isNaN(ts)?'':new Date(ts).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})};
   });
 }
+var _lastNewsError=null;
 function fetchNewsSequential(sources){
-  if(!sources.length) return Promise.reject(new Error('all news sources failed'));
+  if(!sources.length) return Promise.reject(_lastNewsError||new Error('all news sources failed'));
   var src=sources[0], rest=sources.slice(1);
   return fetch(src.url)
     .then(function(r){
-      if(!r.ok) throw new Error('bad response');
+      if(!r.ok) throw new Error('HTTP '+r.status+' from '+src.url);
       return (src.type==='rss2json'||src.type==='alloriginsxml')?r.json():r.text();
     })
     .then(function(data){
@@ -358,10 +359,14 @@ function fetchNewsSequential(sources){
       if(src.type==='rss2json') items=parseRss2Json(data);
       else if(src.type==='alloriginsxml') items=parseRssXml(data.contents||'');
       else items=parseRssXml(data);
-      if(!items.length) throw new Error('no items');
+      if(!items.length) throw new Error('No items parsed from '+src.url);
       return items;
     })
-    .catch(function(){ return fetchNewsSequential(rest); });
+    .catch(function(err){
+      console.error('[news] source failed:', src.url, err);
+      _lastNewsError=err;
+      return fetchNewsSequential(rest);
+    });
 }
 function renderNews(items){
   var now=Date.now();
@@ -387,6 +392,7 @@ function fetchNews(){
   btn.disabled=true;
   btn.innerHTML='<span class="refresh-btn spinning" style="border:none;background:none;padding:0">🔄</span> Refreshing…';
   status.textContent='Fetching latest news…';
+  _lastNewsError=null;
   var sources=[
     {url:'https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(NEWS_RSS_URL), type:'rss2json'},
     {url:'https://api.allorigins.win/get?url='+encodeURIComponent(NEWS_RSS_URL), type:'alloriginsxml'},
@@ -400,9 +406,10 @@ function fetchNews(){
         ? 'Updated: '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})+' • Showing news from the last 14 days only. Links open external sites.'
         : 'No news from the last 14 days available right now.';
     })
-    .catch(function(){
+    .catch(function(err){
+      console.error('[news] all sources failed:', err);
       $('newsGrid').innerHTML='<p style="font-size:.82rem;color:#999">⚠ Could not fetch news right now.</p>';
-      status.textContent='⚠ News fetch failed — network or source blocked.';
+      status.textContent='⚠ News fetch failed (see browser console for details, F12 → Console).';
     })
     .finally(function(){
       btn.disabled=false;
